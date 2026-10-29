@@ -10,8 +10,8 @@
 
 ```bash
 # 1. Clonar el repositorio
-git clone https://github.com/manuela-aguirre/Avance-proyectoSGE.git
-cd Avance-proyectoSGE
+git clone https://github.com/manuela-aguirre/ModuloBibliotecaProyecto.git
+cd ModuloBibliotecaProyecto
 
 # 2. Copiar las variables de entorno
 cp .env.example .env
