@@ -47,6 +47,24 @@
             @endif
         </div>
 
+        <div>
+            <x-input-label for="telefono" :value="__('Teléfono')" />
+            <x-text-input id="telefono" name="telefono" type="tel" class="mt-1 block w-full" :value="old('telefono', $user->telefono)" autocomplete="tel" />
+            <x-input-error class="mt-2" :messages="$errors->get('telefono')" />
+        </div>
+
+        <div>
+            <x-input-label for="carrera" :value="__('Carrera o programa')" />
+            <x-text-input id="carrera" name="carrera" type="text" class="mt-1 block w-full" :value="old('carrera', $user->carrera)" required />
+            <x-input-error class="mt-2" :messages="$errors->get('carrera')" />
+        </div>
+
+        <div>
+            <x-input-label for="semestre" :value="__('Semestre')" />
+            <x-text-input id="semestre" name="semestre" type="number" min="1" max="12" class="mt-1 block w-full" :value="old('semestre', $user->semestre)" required />
+            <x-input-error class="mt-2" :messages="$errors->get('semestre')" />
+        </div>
+
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 

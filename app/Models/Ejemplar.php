@@ -14,12 +14,14 @@ class Ejemplar extends Model
         'libro_id', 'ubicacion_id', 'codigo_barras', 'signatura', 'edicion',
         'anio_edicion', 'tipo_material', 'numero_factura', 'valor',
         'fecha_adquisicion', 'estado',
+        'numero_entrada', 'paginas', 'medio_adquisicion', 'recibido_por', 'fecha_ingreso',
     ];
 
     protected function casts(): array
     {
         return [
             'fecha_adquisicion' => 'date',
+            'fecha_ingreso' => 'date',
             'valor' => 'decimal:2',
         ];
     }

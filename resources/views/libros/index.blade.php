@@ -29,7 +29,7 @@
 
         <div class="libros-toolbar">
             <form method="GET" action="{{ route('libros.index') }}" class="libros-search">
-                <input type="text" name="q" value="{{ $q }}" placeholder="Buscar por título o ISBN...">
+                <input type="text" name="q" value="{{ $q }}" placeholder="Título, autor, ISBN, código de barras, signatura o palabra clave...">
             </form>
 
             <a href="{{ route('libros.create') }}" class="libros-btn-new">

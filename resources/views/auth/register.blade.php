@@ -338,6 +338,69 @@
                             @enderror
                         </div>
 
+                        <div class="cotec-field">
+                            <label for="telefono">Teléfono (opcional)</label>
+                            <div class="cotec-input-wrap">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" style="width:1.1rem;height:1.1rem;">
+                                    <rect x="2" y="5" width="20" height="14" rx="2"/>
+                                    <line x1="2" y1="10" x2="22" y2="10"/>
+                                </svg>
+                                <input
+                                    id="telefono"
+                                    type="tel" inputmode="tel"
+                                    name="telefono"
+                                    value="{{ old('telefono') }}"
+                                    
+                                    placeholder="Ej: 3001234567"
+                                />
+                            </div>
+                            @error('telefono')
+                                <p class="cotec-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="cotec-field">
+                            <label for="carrera">Carrera o programa</label>
+                            <div class="cotec-input-wrap">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" style="width:1.1rem;height:1.1rem;">
+                                    <rect x="2" y="5" width="20" height="14" rx="2"/>
+                                    <line x1="2" y1="10" x2="22" y2="10"/>
+                                </svg>
+                                <input
+                                    id="carrera"
+                                    type="text"
+                                    name="carrera"
+                                    value="{{ old('carrera') }}"
+                                    required
+                                    placeholder="Ej: Tecnología en Sistemas de Información"
+                                />
+                            </div>
+                            @error('carrera')
+                                <p class="cotec-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="cotec-field">
+                            <label for="semestre">Semestre</label>
+                            <div class="cotec-input-wrap">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" style="width:1.1rem;height:1.1rem;">
+                                    <rect x="2" y="5" width="20" height="14" rx="2"/>
+                                    <line x1="2" y1="10" x2="22" y2="10"/>
+                                </svg>
+                                <input
+                                    id="semestre"
+                                    type="number" min="1" max="12"
+                                    name="semestre"
+                                    value="{{ old('semestre') }}"
+                                    required
+                                    placeholder="Ej: 4"
+                                />
+                            </div>
+                            @error('semestre')
+                                <p class="cotec-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <!-- Correo -->
                         <div class="cotec-field">
                             <label for="email">Correo electrónico</label>

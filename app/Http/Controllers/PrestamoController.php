@@ -39,6 +39,22 @@ class PrestamoController extends Controller
         return view('prestamos.mios', compact('prestamos'));
     }
 
+    /** Historial de préstamos y reservas de cualquier usuario, buscado por su número de identificación (bibliotecario). */
+    public function historial(Request $request)
+    {
+        $numero = trim((string) $request->get('numero_identificacion'));
+        $usuario = null;
+
+        if ($numero !== '') {
+            $usuario = User::with([
+                'prestamos' => fn ($q) => $q->latest('fecha_prestamo')->with('ejemplares.libro'),
+                'reservas' => fn ($q) => $q->latest('fecha_retiro')->with('ejemplar.libro'),
+            ])->where('numero_identificacion', $numero)->first();
+        }
+
+        return view('usuarios.historial', ['usuario' => $usuario, 'buscado' => $numero !== '']);
+    }
+
     public function create()
     {
         return view('prestamos.create');

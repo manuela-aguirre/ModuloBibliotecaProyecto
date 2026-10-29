@@ -238,6 +238,7 @@
                                 <a href="{{ route('prestamos.index') }}" class="cotec-side-link {{ request()->routeIs('prestamos.index', 'prestamos.create') ? 'active' : '' }}"><i class="fa-solid fa-hand-holding-hand"></i> Préstamos</a>
                                 <a href="{{ route('reservas.todas') }}" class="cotec-side-link {{ request()->routeIs('reservas.todas') ? 'active' : '' }}"><i class="fa-solid fa-file-lines"></i> Reservas</a>
                                 <a href="{{ route('usuarios.index') }}" class="cotec-side-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}"><i class="fa-solid fa-user-group"></i> Usuarios</a>
+                                <a href="{{ route('usuarios.historial') }}" class="cotec-side-link {{ request()->routeIs('usuarios.historial') ? 'active' : '' }}"><i class="fa-solid fa-clock-rotate-left"></i> Historial por cédula</a>
                             @endif
 
                             {{-- Visible para todos, incluso sin iniciar sesión --}}
@@ -279,6 +280,7 @@
                             <nav x-show="openReportes" x-transition class="cotec-nav-group">
                                 <a href="{{ route('reportes.prestamos') }}" class="cotec-side-link"><i class="fa-solid fa-file-csv"></i> Préstamos (CSV)</a>
                                 <a href="{{ route('reportes.inventario') }}" class="cotec-side-link"><i class="fa-solid fa-boxes-stacked"></i> Inventario (CSV)</a>
+                                <a href="{{ route('reportes.reservas') }}" class="cotec-side-link"><i class="fa-solid fa-bookmark"></i> Reservas (CSV)</a>
                             </nav>
                         @endif
                     </aside>

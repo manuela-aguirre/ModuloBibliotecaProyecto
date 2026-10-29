@@ -15,6 +15,9 @@
             · {{ $libro->editorial->nombre }} · ISBN {{ $libro->isbn ?? '—' }}
         </p>
         <p style="margin:.75rem 0;">{{ $libro->descripcion ?: 'Sin descripción.' }}</p>
+        @if ($libro->palabras_clave)
+            <p class="ui-muted">Palabras clave: {{ $libro->palabras_clave }}</p>
+        @endif
 
         <div class="ui-inline" style="margin-bottom:1rem;">
             <span class="ui-badge">{{ $libro->genero->nombre }}</span>
@@ -43,6 +46,15 @@
             @elseif ($disponibles->count() > 0)
                 <form method="POST" action="{{ route('reservas.store', $libro) }}" class="ui-card">
                     @csrf
+                    <div class="ui-muted">
+                        Reservarás a nombre de <strong>{{ auth()->user()->name }}</strong>
+                        ({{ auth()->user()->tipo_identificacion }} {{ auth()->user()->numero_identificacion }})
+                        @if (auth()->user()->carrera) · {{ auth()->user()->carrera }} @endif
+                        @if (auth()->user()->semestre) · Semestre {{ auth()->user()->semestre }} @endif
+                        @unless (auth()->user()->carrera && auth()->user()->semestre)
+                            <br><a href="{{ route('profile.edit') }}" style="color:#14532d;font-weight:600;">Completa tu carrera y semestre en tu perfil</a>
+                        @endunless
+                    </div>
                     <label class="ui-label" for="fecha_retiro">¿Qué día pasarás a reclamarlo?</label>
                     <input class="ui-input" style="max-width:240px" type="date" id="fecha_retiro" name="fecha_retiro"
                            min="{{ today()->toDateString() }}"

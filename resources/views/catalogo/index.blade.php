@@ -6,7 +6,7 @@
         @include('partials.mensajes')
 
         <form method="GET" action="{{ route('catalogo.index') }}" class="ui-toolbar">
-            <input class="ui-input" style="max-width:320px" type="text" name="q" value="{{ $q }}" placeholder="Título, autor o ISBN...">
+            <input class="ui-input" style="max-width:320px" type="text" name="q" value="{{ $q }}" placeholder="Título, autor, ISBN, código de barras, signatura o palabra clave...">
             <select class="ui-select" style="max-width:280px" name="genero_id">
                 <option value="">Todas las carreras / géneros</option>
                 @foreach ($generos as $g)

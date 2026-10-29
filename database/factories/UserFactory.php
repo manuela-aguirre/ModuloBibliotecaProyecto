@@ -34,6 +34,9 @@ class UserFactory extends Factory
         'remember_token' => Str::random(10),
         'rol' => 'usuario',          // NUEVO
         'limite_prestamos' => 3,     // NUEVO
+        'telefono' => fake()->numerify('3#########'),
+        'carrera' => 'Tecnología en Sistemas de Información',
+        'semestre' => fake()->numberBetween(1, 6),
     ];
 }
 

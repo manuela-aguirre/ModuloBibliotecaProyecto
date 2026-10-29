@@ -35,6 +35,9 @@ class RegisteredUserController extends Controller
             'tipo_identificacion' => ['required', 'string', 'in:CC,TI'],
             'numero_identificacion' => ['required', 'string', 'max:20', 'regex:/^[A-Za-z0-9-]+$/'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'telefono' => ['nullable', 'string', 'max:20'],
+'carrera'  => ['required', 'string', 'max:100'],
+'semestre' => ['required', 'integer', 'between:1,12'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -44,6 +47,9 @@ class RegisteredUserController extends Controller
             'numero_identificacion' => $request->numero_identificacion,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'telefono' => $request->telefono,
+'carrera'  => $request->carrera,
+'semestre' => $request->semestre,
         ]);
 
         event(new Registered($user));

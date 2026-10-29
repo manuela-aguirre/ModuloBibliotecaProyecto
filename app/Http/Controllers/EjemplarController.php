@@ -84,6 +84,11 @@ class EjemplarController extends Controller
             'numero_factura' => ['nullable', 'string', 'max:50'],
             'valor' => ['nullable', 'numeric', 'min:0'],
             'fecha_adquisicion' => ['nullable', 'date'],
+            'numero_entrada' => ['nullable', 'string', 'max:30'],
+            'paginas' => ['nullable', 'integer', 'min:1'],
+            'medio_adquisicion' => ['nullable', Rule::in(['compra', 'donacion', 'canje'])],
+            'recibido_por' => ['nullable', 'string', 'max:100'],
+            'fecha_ingreso' => ['nullable', 'date'],
             'estado' => ['required', Rule::in(['disponible', 'danado', 'baja'])],
         ];
     }

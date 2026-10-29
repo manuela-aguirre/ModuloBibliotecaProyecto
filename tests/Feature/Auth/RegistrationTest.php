@@ -22,6 +22,8 @@ class RegistrationTest extends TestCase
         'name' => 'Test User',
         'tipo_identificacion' => 'CC',
         'numero_identificacion' => '1234567890',
+        'carrera' => 'Sistemas',
+        'semestre' => 3,
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',

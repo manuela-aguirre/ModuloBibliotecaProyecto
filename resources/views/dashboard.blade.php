@@ -396,9 +396,9 @@
                             <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 0 1 0 7H6"/>
                         </svg>
                     </div>
-                    <div class="cotec-kpi-value">$0</div>
+                    <div class="cotec-kpi-value">${{ number_format($multasPendientes ?? 0, 0, ',', '.') }}</div>
                     <div class="cotec-kpi-label">Multas pendientes</div>
-                    <div class="cotec-kpi-tooltip">El CSV registra multas históricas, pero no hay sanciones vigentes en préstamos activos; la exposición financiera actual es $0.</div>
+                    <div class="cotec-kpi-tooltip">Suma de las multas generadas por devoluciones tardías que aún no se han pagado.</div>
                 </div>
 
                 <div class="cotec-kpi-card" tabindex="0">
@@ -427,6 +427,40 @@
                     <div class="cotec-kpi-tooltip">Cantidad real de usuarios registrados en la plataforma, independientemente del uso del catálogo.</div>
                 </div>
 
+            </div>
+
+            <div style="margin-top:2rem;display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));">
+                <div style="border:1px solid #dcfce7;border-radius:1rem;background:#fff;padding:1.1rem;">
+                    <div style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#14532d;">Libros más prestados</div>
+                    @forelse ($masPrestados as $l)
+                        <div style="margin-top:.8rem;">
+                            <div style="display:flex;justify-content:space-between;gap:1rem;font-size:.88rem;color:#334155;">
+                                <span>{{ $l->titulo }}</span><strong>{{ $l->total }}</strong>
+                            </div>
+                            <div style="margin-top:.3rem;height:8px;border-radius:999px;background:#f0fdf4;">
+                                <div style="height:8px;border-radius:999px;background:#16a34a;width:{{ round($l->total / $masPrestados->first()->total * 100) }}%;"></div>
+                            </div>
+                        </div>
+                    @empty
+                        <p style="margin-top:.8rem;font-size:.88rem;color:#64748b;">Aún no hay préstamos registrados.</p>
+                    @endforelse
+                </div>
+
+                <div style="border:1px solid #dcfce7;border-radius:1rem;background:#fff;padding:1.1rem;">
+                    <div style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#14532d;">Préstamos por mes (últimos 6)</div>
+                    @php $maxMes = max(1, max(array_column($prestamosPorMes, 'total'))); @endphp
+                    @foreach ($prestamosPorMes as $m)
+                        <div style="margin-top:.8rem;">
+                            <div style="display:flex;justify-content:space-between;font-size:.88rem;color:#334155;">
+                                <span>{{ ucfirst($m['mes']) }}</span><strong>{{ $m['total'] }}</strong>
+                            </div>
+                            <div style="margin-top:.3rem;height:8px;border-radius:999px;background:#eff6ff;">
+                                <div style="height:8px;border-radius:999px;background:#2563eb;width:{{ round($m['total'] / $maxMes * 100) }}%;"></div>
+                            </div>
+                        </div>
+                    @endforeach
+                    <p style="margin-top:1rem;font-size:.82rem;color:#64748b;">Reservas activas ahora: <strong>{{ $reservasActivas }}</strong></p>
+                </div>
             </div>
 
             <div class="mt-8 grid gap-4 md:grid-cols-1">

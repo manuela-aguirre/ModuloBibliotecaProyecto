@@ -77,6 +77,7 @@ class LibroController extends Controller
             'descripcion' => ['nullable', 'string'],
             'portada_url' => ['nullable', 'url', 'max:255'],
             'isbn' => ['nullable', 'string', 'max:20'],
+            'palabras_clave' => ['nullable', 'string', 'max:255'],
             'editorial_id' => ['required', 'exists:editorials,id'],
             'genero_id' => ['required', 'exists:generos,id'],
             'autores' => ['nullable', 'array'],

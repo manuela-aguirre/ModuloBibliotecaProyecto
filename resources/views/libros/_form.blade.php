@@ -90,6 +90,13 @@
         </div>
     </div>
 
+    <div class="field">
+        <label for="palabras_clave">Palabras clave</label>
+        <input type="text" id="palabras_clave" name="palabras_clave" maxlength="255" value="{{ old('palabras_clave', $libro->palabras_clave ?? '') }}">
+        <span class="hint">Separadas por coma. Ayudan a encontrar el libro en el buscador.</span>
+        <x-input-error :messages="$errors->get('palabras_clave')" class="mt-1" />
+    </div>
+
     {{-- Solo al editar: el stock ya no se escribe a mano, se muestra --}}
     @isset($libro)
         <div class="field">

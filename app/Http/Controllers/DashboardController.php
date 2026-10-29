@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Libro;
 use App\Models\Prestamo;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -69,6 +70,37 @@ class DashboardController extends Controller
             'usoCatalogo' => $totalLibros > 0 ? round($prestamosActivos / $totalLibros * 100, 1) : 0,
             'disponibilidadStock' => $totalLibros > 0 ? round($stockSaludable / $totalLibros * 100, 1) : 0,
             'stockSaludable' => $stockSaludable,
+            'reservasActivas' => \App\Models\Reserva::activas()->count(),
+            'masPrestados' => $this->masPrestados(),
+            'prestamosPorMes' => $this->prestamosPorMes(),
         ]);
+    }
+
+    /** Los 5 títulos con más préstamos. */
+    private function masPrestados()
+    {
+        return DB::table('prestamo_ejemplar')
+            ->join('ejemplares', 'ejemplares.id', '=', 'prestamo_ejemplar.ejemplar_id')
+            ->join('libros', 'libros.id', '=', 'ejemplares.libro_id')
+            ->select('libros.titulo', DB::raw('count(*) as total'))
+            ->groupBy('libros.id', 'libros.titulo')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
+    }
+
+    /** Préstamos registrados en cada uno de los últimos 6 meses. */
+    private function prestamosPorMes(): array
+    {
+        $meses = collect(range(5, 0))->map(fn ($i) => now()->startOfMonth()->subMonths($i));
+
+        $conteo = Prestamo::where('fecha_prestamo', '>=', $meses->first())
+            ->get(['fecha_prestamo'])
+            ->countBy(fn ($p) => $p->fecha_prestamo->format('Y-m'));
+
+        return $meses->map(fn ($m) => [
+            'mes' => $m->translatedFormat('M Y'),
+            'total' => $conteo->get($m->format('Y-m'), 0),
+        ])->all();
     }
 }

@@ -36,6 +36,7 @@ Route::middleware('auth')->group(function () {
 // ---------- Solo administrador / bibliotecario ----------
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::get('/usuarios', [DashboardController::class, 'usuarios'])->name('usuarios.index');
+    Route::get('/usuarios/historial', [PrestamoController::class, 'historial'])->name('usuarios.historial');
 
     Route::resource('libros', LibroController::class);
 
@@ -59,6 +60,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
 
     Route::get('/reportes/prestamos', [ReporteController::class, 'prestamos'])->name('reportes.prestamos');
     Route::get('/reportes/inventario', [ReporteController::class, 'inventario'])->name('reportes.inventario');
+    Route::get('/reportes/reservas', [ReporteController::class, 'reservas'])->name('reportes.reservas');
 });
 
 require __DIR__.'/auth.php';

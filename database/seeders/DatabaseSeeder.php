@@ -28,6 +28,9 @@ class DatabaseSeeder extends Seeder
     User::factory()->create([
         'name' => 'Estudiante Demo',
         'email' => 'estudiante@example.com',
+        'telefono' => '3001234567',
+        'carrera' => 'Tecnología en Sistemas de Información',
+        'semestre' => 4,
         'tipo_identificacion' => 'CC',
         'numero_identificacion' => '1000000001',
     ]);
@@ -40,6 +43,7 @@ class DatabaseSeeder extends Seeder
         UbicacionSeeder::class,
         AutorSeeder::class,
         EjemplarSeeder::class,
+        PrestamoReservaSeeder::class,
     ]);
 }
 }

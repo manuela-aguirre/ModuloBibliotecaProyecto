@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Libro extends Model
 {
     protected $fillable = [
-        'titulo', 'descripcion', 'portada_url', 'stock', 'isbn', 'editorial_id', 'genero_id',
+        'titulo', 'descripcion', 'portada_url', 'stock', 'isbn', 'palabras_clave', 'editorial_id', 'genero_id',
     ];
 
     public function editorial()
@@ -37,18 +37,22 @@ class Libro extends Model
     }
 
     /** Busca por título, ISBN o nombre de autor. */
-    public function scopeBuscar($query, ?string $texto)
-    {
-        if (! $texto) {
-            return $query;
-        }
-
-        return $query->where(function ($q) use ($texto) {
-            $q->where('titulo', 'like', "%{$texto}%")
-                ->orWhere('isbn', 'like', "%{$texto}%")
-                ->orWhereHas('autores', fn ($a) => $a->where('nombre', 'like', "%{$texto}%"));
-        });
+     public function scopeBuscar($query, ?string $texto)
+{
+    if (! $texto) {
+        return $query;
     }
+
+    return $query->where(function ($q) use ($texto) {
+        $q->where('titulo', 'like', "%{$texto}%")
+            ->orWhere('isbn', 'like', "%{$texto}%")
+                ->orWhere('palabras_clave', 'like', "%{$texto}%")
+            ->orWhereHas('autores', fn ($a) => $a->where('nombre', 'like', "%{$texto}%"))
+            ->orWhereHas('ejemplares', fn ($e) => $e
+                ->where('codigo_barras', 'like', "%{$texto}%")
+                ->orWhere('signatura', 'like', "%{$texto}%"));
+    });
+}
 
     public function scopeConStock($query)
     {

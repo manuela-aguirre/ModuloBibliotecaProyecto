@@ -43,6 +43,32 @@
         <input class="ui-input" type="date" id="fecha_adquisicion" name="fecha_adquisicion" value="{{ old('fecha_adquisicion', $e?->fecha_adquisicion?->toDateString()) }}">
     </div>
 
+    <div class="ui-field">
+        <label class="ui-label" for="numero_entrada">Número de entrada</label>
+        <input class="ui-input"  id="numero_entrada" name="numero_entrada" value="{{ old('numero_entrada', $e?->numero_entrada) }}">
+    </div>
+    <div class="ui-field">
+        <label class="ui-label" for="paginas">Páginas</label>
+        <input class="ui-input" type="number" min="1" id="paginas" name="paginas" value="{{ old('paginas', $e?->paginas) }}">
+    </div>
+    <div class="ui-field">
+        <label class="ui-label" for="medio_adquisicion">Medio de adquisición</label>
+        <select class="ui-select" id="medio_adquisicion" name="medio_adquisicion">
+            <option value="">Sin especificar</option>
+            @foreach (['compra' => 'Compra', 'donacion' => 'Donación', 'canje' => 'Canje'] as $k => $t)
+                <option value="{{ $k }}" @selected(old('medio_adquisicion', $e?->medio_adquisicion) === $k)>{{ $t }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div class="ui-field">
+        <label class="ui-label" for="recibido_por">Recibido por</label>
+        <input class="ui-input"  id="recibido_por" name="recibido_por" value="{{ old('recibido_por', $e?->recibido_por) }}">
+    </div>
+    <div class="ui-field">
+        <label class="ui-label" for="fecha_ingreso">Fecha de ingreso</label>
+        <input class="ui-input" type="date" id="fecha_ingreso" name="fecha_ingreso" value="{{ old('fecha_ingreso', $e?->fecha_ingreso?->toDateString()) }}">
+    </div>
+
     @if ($e && ! in_array($e->estado, ['prestado', 'reservado']))
         <div class="ui-field">
             <label class="ui-label" for="estado">Estado</label>

@@ -19,7 +19,8 @@
                 <tbody>
                 @foreach ($reservas as $r)
                     <tr>
-                        <td>{{ $r->user->name }}<div class="ui-muted">{{ $r->user->tipo_identificacion }} {{ $r->user->numero_identificacion }}</div></td>
+                        <td>{{ $r->user->name }}<div class="ui-muted">{{ $r->user->tipo_identificacion }} {{ $r->user->numero_identificacion }}</div>
+                            <div class="ui-muted">{{ $r->user->carrera }}@if ($r->user->semestre) · Sem. {{ $r->user->semestre }}@endif @if ($r->user->telefono) · {{ $r->user->telefono }}@endif</div></td>
                         <td>{{ $r->ejemplar->libro->titulo }}</td>
                         <td>{{ $r->ejemplar->codigo_barras }}<div class="ui-muted">{{ $r->ejemplar->ubicacion?->nombre }}</div></td>
                         <td>
