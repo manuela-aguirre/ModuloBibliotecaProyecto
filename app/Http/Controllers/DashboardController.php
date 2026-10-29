@@ -103,4 +103,23 @@ class DashboardController extends Controller
             'total' => $conteo->get($m->format('Y-m'), 0),
         ])->all();
     }
+
+    /** Cambia el rol (usuario o bibliotecario) y el límite de préstamos de un usuario. */
+    public function actualizarUsuario(\Illuminate\Http\Request $request, User $usuario)
+    {
+        $data = $request->validate([
+            'rol' => ['required', 'in:usuario,administrador'],
+            'limite_prestamos' => ['required', 'integer', 'between:1,10'],
+        ]);
+
+        if ($usuario->id === $request->user()->id && $data['rol'] !== 'administrador') {
+            return back()->withErrors(['rol' => 'No puedes quitarte tu propio rol de bibliotecario.']);
+        }
+
+        $usuario->rol = $data['rol'];
+        $usuario->limite_prestamos = $data['limite_prestamos'];
+        $usuario->save();
+
+        return back()->with('status', "Usuario {$usuario->name} actualizado.");
+    }
 }

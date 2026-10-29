@@ -8,4 +8,4 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('reservas:caducar')->dailyAt('00:05');
+Schedule::command('reservas:caducar')->dailyAt('00:05');Schedule::command('biblioteca:respaldar')->dailyAt('01:00');

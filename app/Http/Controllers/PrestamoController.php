@@ -136,6 +136,41 @@ class PrestamoController extends Controller
         return back()->with('status', $mensaje);
     }
 
+    /** Motivos de condonación del Art. 11 del Reglamento: clave => [porcentaje, texto]. */
+    public const MOTIVOS_CONDONACION = [
+        'incapacidad' => [100, 'Incapacidad médica'],
+        'calamidad' => [100, 'Calamidad'],
+        'reposicion' => [100, 'Reposición del material'],
+        'capacitacion' => [50, 'Asistencia a capacitación programada por la Biblioteca'],
+        'material_apoyo' => [50, 'Desarrollo de material de apoyo que promueva el uso de la Biblioteca'],
+    ];
+
+    /** Condona total (100 %) o parcialmente (50 %) una multa pendiente. */
+    public function condonar(Request $request, Prestamo $prestamo)
+    {
+        $request->validate([
+            'motivo' => ['required', \Illuminate\Validation\Rule::in(array_keys(self::MOTIVOS_CONDONACION))],
+        ]);
+
+        abort_if(
+            $prestamo->multa <= 0 || $prestamo->multa_pagada || $prestamo->condonacion_porcentaje > 0,
+            422,
+            'Esta multa no se puede condonar.'
+        );
+
+        [$porcentaje, $texto] = self::MOTIVOS_CONDONACION[$request->motivo];
+        $original = (float) $prestamo->multa;
+
+        $prestamo->update([
+            'multa_original' => $original,
+            'multa' => round($original * (100 - $porcentaje) / 100, 2),
+            'condonacion_porcentaje' => $porcentaje,
+            'condonacion_motivo' => $texto,
+        ]);
+
+        return back()->with('status', "Multa condonada al {$porcentaje} %: {$texto}.");
+    }
+
     public function pagarMulta(Prestamo $prestamo)
     {
         $prestamo->update(['multa_pagada' => true]);

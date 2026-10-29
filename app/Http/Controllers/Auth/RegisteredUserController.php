@@ -38,6 +38,7 @@ class RegisteredUserController extends Controller
             'telefono' => ['nullable', 'string', 'max:20'],
 'carrera'  => ['required', 'string', 'max:100'],
 'semestre' => ['required', 'integer', 'between:1,12'],
+            'acepta_datos' => ['accepted'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -46,6 +47,7 @@ class RegisteredUserController extends Controller
             'tipo_identificacion' => $request->tipo_identificacion,
             'numero_identificacion' => $request->numero_identificacion,
             'email' => $request->email,
+            'datos_aceptados_at' => now(),
             'password' => Hash::make($request->password),
             'telefono' => $request->telefono,
 'carrera'  => $request->carrera,

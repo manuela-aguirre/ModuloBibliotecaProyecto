@@ -181,6 +181,9 @@
                 <div class="empty-state">No hay usuarios registrados todavía.</div>
             @else
                 <div class="usuarios-table-wrap">
+                    @include('partials.ui')
+                    @include('partials.mensajes')
+                    @error('rol') <p style="color:#991b1b;font-size:.85rem;padding:.5rem 1.5rem;">{{ $message }}</p> @enderror
                     <table class="usuarios-table">
                         <thead>
                             <tr>
@@ -190,6 +193,7 @@
                                 <th>Email</th>
                                 <th>Estado</th>
                                 <th>Registro</th>
+                                <th>Rol y límite</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -207,6 +211,17 @@
                                         @endif
                                     </td>
                                     <td>{{ $usuario->created_at ? $usuario->created_at->format('d/m/Y H:i') : 'Sin fecha' }}</td>
+                                    <td>
+                                        <form method="POST" action="{{ route('usuarios.update', $usuario) }}" style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;">
+                                            @csrf @method('PATCH')
+                                            <select name="rol" style="border-radius:.5rem;border:1px solid #dcfce7;padding:.25rem .5rem;font-size:.8rem;">
+                                                <option value="usuario" @selected($usuario->rol === 'usuario')>Usuario</option>
+                                                <option value="administrador" @selected($usuario->rol === 'administrador')>Bibliotecario</option>
+                                            </select>
+                                            <input type="number" name="limite_prestamos" min="1" max="10" value="{{ $usuario->limite_prestamos ?? 3 }}" title="Límite de préstamos" style="width:4.2rem;border-radius:.5rem;border:1px solid #dcfce7;padding:.25rem .4rem;font-size:.8rem;">
+                                            <button style="background:#14532d;color:#fff;border:0;border-radius:.6rem;padding:.3rem .7rem;font-size:.75rem;font-weight:600;cursor:pointer;">Guardar</button>
+                                        </form>
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>

@@ -44,8 +44,30 @@
                                         @csrf @method('PATCH')
                                         <button class="ui-btn ui-btn-light ui-btn-sm">Marcar pagada</button>
                                     </form>
+                                    @if ($p->condonacion_porcentaje == 0)
+                                        <details style="margin-top:.4rem;">
+                                            <summary class="ui-btn ui-btn-light ui-btn-sm" style="cursor:pointer;">Condonar</summary>
+                                            <form method="POST" action="{{ route('prestamos.condonar', $p) }}" class="ui-inline" style="margin-top:.4rem;">
+                                                @csrf @method('PATCH')
+                                                <select name="motivo" class="ui-select" style="padding:.25rem .5rem;" required>
+                                                    <optgroup label="Condonación del 100 %">
+                                                        <option value="incapacidad">Incapacidad médica</option>
+                                                        <option value="calamidad">Calamidad</option>
+                                                        <option value="reposicion">Reposición del material</option>
+                                                    </optgroup>
+                                                    <optgroup label="Condonación del 50 %">
+                                                        <option value="capacitacion">Capacitación de la Biblioteca</option>
+                                                        <option value="material_apoyo">Material de apoyo</option>
+                                                    </optgroup>
+                                                </select>
+                                                <button class="ui-btn ui-btn-sm">Aplicar</button>
+                                            </form>
+                                        </details>
+                                    @else
+                                        <span class="ui-badge warn" title="{{ $p->condonacion_motivo }}">Condonada {{ $p->condonacion_porcentaje }} %</span>
+                                    @endif
                                 @endif
-                            @else — @endif
+                            @else — @if ($p->condonacion_porcentaje > 0) <span class="ui-badge warn" title="{{ $p->condonacion_motivo }}">Condonada {{ $p->condonacion_porcentaje }} %</span> @endif @endif
                         </td>
                         <td>
                             @if (! $p->fecha_devolucion)

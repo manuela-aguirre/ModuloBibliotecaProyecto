@@ -62,7 +62,7 @@ class RequerimientosTest extends TestCase
     {
         $this->post('/register', [
             'name' => 'Ana Prueba', 'tipo_identificacion' => 'CC', 'numero_identificacion' => '999',
-            'telefono' => '3001112233', 'carrera' => 'Sistemas', 'semestre' => 3,
+            'telefono' => '3001112233', 'carrera' => 'Sistemas', 'semestre' => 3, 'acepta_datos' => '1',
             'email' => 'ana@test.com', 'password' => 'password123', 'password_confirmation' => 'password123',
         ])->assertSessionHasNoErrors();
 
@@ -76,7 +76,7 @@ class RequerimientosTest extends TestCase
         $this->post('/register', [
             'name' => 'Ana Prueba', 'tipo_identificacion' => 'CC', 'numero_identificacion' => '999',
             'email' => 'ana@test.com', 'password' => 'password123', 'password_confirmation' => 'password123',
-        ])->assertSessionHasErrors(['carrera', 'semestre']);
+        ])->assertSessionHasErrors(['carrera', 'semestre', 'acepta_datos']);
     }
 
     public function test_perfil_actualiza_datos_academicos(): void

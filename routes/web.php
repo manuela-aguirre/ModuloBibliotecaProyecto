@@ -16,6 +16,7 @@ Route::get('/', [DashboardController::class, 'welcome'])->name('welcome');
 // ---------- Público: consultar disponibilidad (sin iniciar sesión) ----------
 Route::get('/catalogo', [CatalogoController::class, 'index'])->name('catalogo.index');
 Route::get('/catalogo/{libro}', [CatalogoController::class, 'show'])->name('catalogo.show');
+Route::view('/politica-datos', 'politica-datos')->name('politica.datos');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -37,6 +38,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::get('/usuarios', [DashboardController::class, 'usuarios'])->name('usuarios.index');
     Route::get('/usuarios/historial', [PrestamoController::class, 'historial'])->name('usuarios.historial');
+    Route::patch('/usuarios/{usuario}', [DashboardController::class, 'actualizarUsuario'])->name('usuarios.update');
 
     Route::resource('libros', LibroController::class);
 
@@ -57,6 +59,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::post('/prestamos', [PrestamoController::class, 'store'])->name('prestamos.store');
     Route::patch('/prestamos/{prestamo}/devolver', [PrestamoController::class, 'devolver'])->name('prestamos.devolver');
     Route::patch('/prestamos/{prestamo}/multa-pagada', [PrestamoController::class, 'pagarMulta'])->name('prestamos.multa-pagada');
+    Route::patch('/prestamos/{prestamo}/condonar', [PrestamoController::class, 'condonar'])->name('prestamos.condonar');
 
     Route::get('/reportes/prestamos', [ReporteController::class, 'prestamos'])->name('reportes.prestamos');
     Route::get('/reportes/inventario', [ReporteController::class, 'inventario'])->name('reportes.inventario');

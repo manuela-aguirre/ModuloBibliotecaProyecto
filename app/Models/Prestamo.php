@@ -11,6 +11,7 @@ class Prestamo extends Model
     protected $fillable = [
         'user_id', 'registrado_por', 'fecha_prestamo', 'fecha_limite',
         'fecha_devolucion', 'multa', 'multa_pagada', 'observaciones',
+        'multa_original', 'condonacion_porcentaje', 'condonacion_motivo',
     ];
 
     protected function casts(): array

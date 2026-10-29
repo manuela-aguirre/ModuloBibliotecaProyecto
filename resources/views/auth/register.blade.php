@@ -468,6 +468,20 @@
                             @enderror
                         </div>
 
+                        <!-- Autorización de tratamiento de datos (Ley 1581 de 2012) -->
+                        <div class="cotec-field">
+                            <label style="display:flex;gap:.55rem;align-items:flex-start;font-weight:400;">
+                                <input type="checkbox" name="acepta_datos" value="1" required {{ old('acepta_datos') ? 'checked' : '' }} style="margin-top:.2rem;width:auto;">
+                                <span>
+                                    Autorizo el tratamiento de mis datos personales conforme a la Ley 1581 de 2012.
+                                    <a href="{{ route('politica.datos') }}" target="_blank" style="color:#14532d;font-weight:600;">Ver política</a>
+                                </span>
+                            </label>
+                            @error('acepta_datos')
+                                <p class="cotec-error">Debes autorizar el tratamiento de tus datos para registrarte.</p>
+                            @enderror
+                        </div>
+
                         <!-- Botón -->
                         <button type="submit" class="cotec-submit">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" style="width:1.1rem;height:1.1rem;">
