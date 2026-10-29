@@ -47,7 +47,7 @@
                         <th>ISBN</th>
                         <th>Editorial</th>
                         <th>Género</th>
-                        <th>Stock</th>
+                        <th>Disponibles</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -65,13 +65,14 @@
                             <td><span class="libro-badge">{{ $libro->genero?->nombre ?: 'Sin género' }}</span></td>
                             <td class="{{ $libro->stock <= 2 ? 'libro-stock-low' : '' }}">{{ $libro->stock }}</td>
                             <td class="libros-actions">
-                                <a class="edit" href="{{ route('libros.edit', $libro) }}"><i class="fa-solid fa-pen"></i> Editar</a>
-                                <form action="{{ route('libros.destroy', $libro) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar este libro?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="delete"><i class="fa-solid fa-trash"></i> Eliminar</button>
-                                </form>
-                            </td>
+    <a class="edit" href="{{ route('libros.ejemplares.index', $libro) }}"><i class="fa-solid fa-barcode"></i> Ejemplares</a>
+    <a class="edit" href="{{ route('libros.edit', $libro) }}"><i class="fa-solid fa-pen"></i> Editar</a>
+    <form action="{{ route('libros.destroy', $libro) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar este libro?');">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="delete"><i class="fa-solid fa-trash"></i> Eliminar</button>
+    </form>
+</td>
                         </tr>
                     @endforeach
                 </tbody>

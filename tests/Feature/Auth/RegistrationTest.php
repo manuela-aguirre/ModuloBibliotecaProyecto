@@ -17,15 +17,20 @@ class RegistrationTest extends TestCase
     }
 
     public function test_new_users_can_register(): void
-    {
-        $response = $this->post('/register', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
+{
+    $response = $this->post('/register', [
+        'name' => 'Test User',
+        'tipo_identificacion' => 'CC',
+        'numero_identificacion' => '1234567890',
+        'email' => 'test@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
 
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
-    }
+    $this->assertAuthenticated();
+    $response->assertRedirect(route('dashboard', absolute: false));
+
+    // Todo registro nuevo debe quedar como usuario común, nunca como administrador
+    $this->assertDatabaseHas('users', ['email' => 'test@example.com', 'rol' => 'usuario']);
+}
 }

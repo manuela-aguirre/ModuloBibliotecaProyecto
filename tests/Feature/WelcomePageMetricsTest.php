@@ -2,49 +2,36 @@
 
 namespace Tests\Feature;
 
+use App\Models\Editorial;
+use App\Models\Genero;
+use App\Models\Libro;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class WelcomePageMetricsTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_welcome_page_uses_data_driven_metrics(): void
     {
-        $path = storage_path('app/data/libro.csv');
-        $fileCount = 0;
-        $stockHealthy = 0;
+        $editorial = Editorial::create(['nombre' => 'Editorial Prueba']);
+        $genero = Genero::create(['nombre' => 'Género Prueba']);
 
-        if (($handle = fopen($path, 'r')) !== false) {
-            $headers = fgetcsv($handle, 0, ',');
-
-            if ($headers !== false) {
-                while (($row = fgetcsv($handle, 0, ',')) !== false) {
-                    if (count($row) === count($headers)) {
-                        $fileCount++;
-
-                        $stockIndex = array_search('stock', array_map('strtolower', $headers), true);
-                        $stock = $stockIndex !== false ? trim((string) ($row[$stockIndex] ?? '')) : '';
-
-                        if (is_numeric($stock) && (int) $stock > 2) {
-                            $stockHealthy++;
-                        }
-                    }
-                }
-            }
-
-            fclose($handle);
+        // Dos libros con stock saludable (> 2) y uno con stock crítico
+        foreach ([5, 5, 1] as $i => $stock) {
+            Libro::create([
+                'titulo' => 'Libro '.($i + 1),
+                'stock' => $stock,
+                'editorial_id' => $editorial->id,
+                'genero_id' => $genero->id,
+            ]);
         }
 
-        $expectedRegistros = $fileCount >= 1000
-            ? number_format($fileCount / 1000, 1, '.', '').'k'
-            : (string) $fileCount;
-
-        $expectedDisponibilidad = $fileCount > 0
-            ? round(($stockHealthy / $fileCount) * 100, 1).'%'
-            : '0%';
-
+        // 3 registros; 2 de 3 con stock saludable = 66.7 %
         $this->get('/')
             ->assertOk()
-            ->assertSee('<strong>'.$expectedRegistros.'</strong>Registros', false)
-            ->assertSee('<strong>'.$expectedDisponibilidad.'</strong>Disponibilidad', false)
+            ->assertSee('<strong>3</strong>Registros', false)
+            ->assertSee('<strong>66.7%</strong>Disponibilidad', false)
             ->assertDontSee('12.4k');
     }
 }

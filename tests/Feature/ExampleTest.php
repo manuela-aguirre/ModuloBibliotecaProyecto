@@ -50,15 +50,24 @@ class ExampleTest extends TestCase
             ->assertSee('Sin género');
     }
 
-    public function test_dashboard_shows_practical_kpis_for_analysis(): void
-    {
-        $this->actingAs(User::factory()->create())
-            ->get('/dashboard')
-            ->assertOk()
-            ->assertSee('Préstamos activos')
-            ->assertSee('Stock crítico')
-            ->assertSee('Tasa de vencimiento')
-            ->assertSee('Uso del catálogo')
-            ->assertSee('Multas pendientes');
-    }
+   public function test_dashboard_shows_practical_kpis_for_analysis(): void
+{
+    $admin = User::factory()->create(['rol' => 'administrador']);
+
+    $this->actingAs($admin)
+        ->get('/dashboard')
+        ->assertOk()
+        ->assertSee('Préstamos activos')
+        ->assertSee('Stock crítico')
+        ->assertSee('Tasa de vencimiento')
+        ->assertSee('Uso del catálogo')
+        ->assertSee('Multas pendientes');
+}
+
+public function test_usuario_comun_es_redirigido_del_dashboard_al_catalogo(): void
+{
+    $this->actingAs(User::factory()->create())
+        ->get('/dashboard')
+        ->assertRedirect(route('catalogo.index'));
+}
 }

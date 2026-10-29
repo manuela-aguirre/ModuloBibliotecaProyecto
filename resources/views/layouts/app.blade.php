@@ -222,6 +222,8 @@
             <div class="cotec-shell">
                 <div class="cotec-layout">
                     <aside class="cotec-sidebar" x-data="{ openOperaciones: true, openConfiguracion: false, openReportes: false }">
+
+                        {{-- ===================== OPERACIONES ===================== --}}
                         <div class="cotec-section-label">
                             <button type="button" @click="openOperaciones = !openOperaciones" class="cotec-section-toggle">
                                 <span>Operaciones</span>
@@ -229,13 +231,28 @@
                             </button>
                         </div>
                         <nav x-show="openOperaciones" x-transition class="cotec-nav-group">
-                            <a href="/dashboard" class="cotec-side-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
-                            <a href="/libros" class="cotec-side-link {{ request()->routeIs('libros.*') ? 'active' : '' }}"><i class="fa-solid fa-book-open-reader"></i> Catálogo de Libros</a>
-                            <a href="/dashboard#" class="cotec-side-link"><i class="fa-solid fa-hand-holding-hand"></i> Préstamos</a>
-                            <a href="/usuarios" class="cotec-side-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}"><i class="fa-solid fa-user-group"></i> Usuarios</a>
-                            <a href="/dashboard#" class="cotec-side-link"><i class="fa-solid fa-file-lines"></i> Reservas</a>
+                            {{-- Solo personal de la biblioteca (administrador) --}}
+                            @if (auth()->user()?->esAdministrador())
+                                <a href="{{ route('dashboard') }}" class="cotec-side-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+                                <a href="{{ route('libros.index') }}" class="cotec-side-link {{ request()->routeIs('libros.*', 'ejemplares.*') ? 'active' : '' }}"><i class="fa-solid fa-book-open-reader"></i> Libros y ejemplares</a>
+                                <a href="{{ route('prestamos.index') }}" class="cotec-side-link {{ request()->routeIs('prestamos.index', 'prestamos.create') ? 'active' : '' }}"><i class="fa-solid fa-hand-holding-hand"></i> Préstamos</a>
+                                <a href="{{ route('reservas.todas') }}" class="cotec-side-link {{ request()->routeIs('reservas.todas') ? 'active' : '' }}"><i class="fa-solid fa-file-lines"></i> Reservas</a>
+                                <a href="{{ route('usuarios.index') }}" class="cotec-side-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}"><i class="fa-solid fa-user-group"></i> Usuarios</a>
+                            @endif
+
+                            {{-- Visible para todos, incluso sin iniciar sesión --}}
+                            <a href="{{ route('catalogo.index') }}" class="cotec-side-link {{ request()->routeIs('catalogo.*') ? 'active' : '' }}"><i class="fa-solid fa-magnifying-glass"></i> Consultar disponibilidad</a>
+
+                            {{-- Solo usuarios finales (estudiantes, docentes, administrativos) --}}
+                            @auth
+                                @unless (auth()->user()->esAdministrador())
+                                    <a href="{{ route('reservas.index') }}" class="cotec-side-link {{ request()->routeIs('reservas.index') ? 'active' : '' }}"><i class="fa-solid fa-bookmark"></i> Mis reservas</a>
+                                    <a href="{{ route('prestamos.mios') }}" class="cotec-side-link {{ request()->routeIs('prestamos.mios') ? 'active' : '' }}"><i class="fa-solid fa-clock-rotate-left"></i> Mis préstamos</a>
+                                @endunless
+                            @endauth
                         </nav>
 
+                        {{-- ===================== CONFIGURACIÓN ===================== --}}
                         <div class="cotec-section-label">
                             <button type="button" @click="openConfiguracion = !openConfiguracion" class="cotec-section-toggle">
                                 <span>Configuración</span>
@@ -243,21 +260,27 @@
                             </button>
                         </div>
                         <nav x-show="openConfiguracion" x-transition class="cotec-nav-group">
-                            <a href="#" class="cotec-side-link"><i class="fa-solid fa-gear"></i> Parámetros</a>
-                            <a href="#" class="cotec-side-link"><i class="fa-solid fa-tags"></i> Categorías</a>
-                            <a href="{{ route('profile.edit') }}" class="cotec-side-link"><i class="fa-solid fa-user"></i> Perfil</a>
+                            @if (auth()->user()?->esAdministrador())
+                                <a href="{{ route('ubicaciones.index') }}" class="cotec-side-link {{ request()->routeIs('ubicaciones.*') ? 'active' : '' }}"><i class="fa-solid fa-location-dot"></i> Ubicaciones</a>
+                            @endif
+                            @auth
+                                <a href="{{ route('profile.edit') }}" class="cotec-side-link {{ request()->routeIs('profile.*') ? 'active' : '' }}"><i class="fa-solid fa-user"></i> Perfil</a>
+                            @endauth
                         </nav>
 
-                        <div class="cotec-section-label">
-                            <button type="button" @click="openReportes = !openReportes" class="cotec-section-toggle">
-                                <span>Reportes</span>
-                                <i class="fa-solid" :class="openReportes ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
-                            </button>
-                        </div>
-                        <nav x-show="openReportes" x-transition class="cotec-nav-group">
-                            <a href="#" class="cotec-side-link"><i class="fa-solid fa-chart-column"></i> Indicadores</a>
-                            <a href="#" class="cotec-side-link"><i class="fa-solid fa-triangle-exclamation"></i> Multas</a>
-                        </nav>
+                        {{-- ===================== REPORTES (solo administrador) ===================== --}}
+                        @if (auth()->user()?->esAdministrador())
+                            <div class="cotec-section-label">
+                                <button type="button" @click="openReportes = !openReportes" class="cotec-section-toggle">
+                                    <span>Reportes</span>
+                                    <i class="fa-solid" :class="openReportes ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+                                </button>
+                            </div>
+                            <nav x-show="openReportes" x-transition class="cotec-nav-group">
+                                <a href="{{ route('reportes.prestamos') }}" class="cotec-side-link"><i class="fa-solid fa-file-csv"></i> Préstamos (CSV)</a>
+                                <a href="{{ route('reportes.inventario') }}" class="cotec-side-link"><i class="fa-solid fa-boxes-stacked"></i> Inventario (CSV)</a>
+                            </nav>
+                        @endif
                     </aside>
 
                     <div class="cotec-content">

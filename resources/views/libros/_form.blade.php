@@ -14,6 +14,7 @@
     }
     .libro-form label { font-weight: 600; color: #14532d; font-size: 0.85rem; }
     .libro-form .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .libro-form .hint { color: #64748b; font-size: 0.78rem; margin-top: 0.25rem; display: block; }
     .libro-form .actions { margin-top: 1.5rem; display: flex; gap: 0.75rem; }
     .libro-form .btn-cancel { padding: 0.6rem 1.1rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.85rem; text-decoration: none; color: #475569; background: #f1f5f9; }
 </style>
@@ -59,25 +60,47 @@
         </div>
     </div>
 
-    <div class="grid-2">
-        <div class="field">
-            <label for="stock">Stock disponible</label>
-            <input type="number" id="stock" name="stock" min="0" value="{{ old('stock', $libro->stock ?? 0) }}" required>
-            <x-input-error :messages="$errors->get('stock')" class="mt-1" />
-        </div>
+    {{-- NUEVO: autores (relación muchos a muchos) --}}
+    <div class="field">
+        <label for="autores">Autores</label>
+        <select id="autores" name="autores[]" multiple size="5">
+            @foreach ($autores as $autor)
+                <option value="{{ $autor->id }}"
+                    @selected(in_array($autor->id, old('autores', isset($libro) ? $libro->autores->pluck('id')->all() : [])))>
+                    {{ $autor->nombre }}
+                </option>
+            @endforeach
+        </select>
+        <span class="hint">Mantén Ctrl (⌘ en Mac) para elegir varios.</span>
+        <x-input-error :messages="$errors->get('autores')" class="mt-1" />
+        <x-input-error :messages="$errors->get('autores.*')" class="mt-1" />
+    </div>
 
+    <div class="grid-2">
         <div class="field">
             <label for="isbn">ISBN</label>
             <input type="text" id="isbn" name="isbn" maxlength="20" value="{{ old('isbn', $libro->isbn ?? '') }}">
             <x-input-error :messages="$errors->get('isbn')" class="mt-1" />
         </div>
+
+        <div class="field">
+            <label for="portada_url">URL de la portada (opcional)</label>
+            <input type="url" id="portada_url" name="portada_url" value="{{ old('portada_url', $libro->portada_url ?? '') }}">
+            <x-input-error :messages="$errors->get('portada_url')" class="mt-1" />
+        </div>
     </div>
 
-    <div class="field">
-        <label for="portada_url">URL de la portada (opcional)</label>
-        <input type="url" id="portada_url" name="portada_url" value="{{ old('portada_url', $libro->portada_url ?? '') }}">
-        <x-input-error :messages="$errors->get('portada_url')" class="mt-1" />
-    </div>
+    {{-- Solo al editar: el stock ya no se escribe a mano, se muestra --}}
+    @isset($libro)
+        <div class="field">
+            <label>Ejemplares disponibles</label>
+            <span class="hint">
+                {{ $libro->stock }} disponible(s).
+                Se actualiza solo desde
+                <a href="{{ route('libros.ejemplares.index', $libro) }}" style="color:#14532d;font-weight:600;">Ejemplares</a>.
+            </span>
+        </div>
+    @endisset
 
     <div class="actions">
         <x-primary-button>{{ isset($libro) ? 'Actualizar libro' : 'Guardar libro' }}</x-primary-button>

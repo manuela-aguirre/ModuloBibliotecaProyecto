@@ -14,21 +14,32 @@ class DatabaseSeeder extends Seeder
      * Seed the application's database.
      */
     public function run(): void
-    {
-        // User::factory(10)->create();
+{
+    // Personal de la biblioteca
+    User::factory()->create([
+        'name' => 'Bibliotecario Demo',
+        'email' => 'test@example.com',
+        'tipo_identificacion' => 'CC',
+        'numero_identificacion' => '1234567890',
+        'rol' => 'administrador',
+    ]);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'tipo_identificacion' => 'CC',
-            'numero_identificacion' => '1234567890',
-        ]);
+    // Usuario final para probar reservas
+    User::factory()->create([
+        'name' => 'Estudiante Demo',
+        'email' => 'estudiante@example.com',
+        'tipo_identificacion' => 'CC',
+        'numero_identificacion' => '1000000001',
+    ]);
 
-        // Orden importa: Editorial y Genero primero (son referenciados por Libro)
-        $this->call([
-            EditorialSeeder::class,
-            GeneroSeeder::class,
-            LibroSeeder::class,
-        ]);
-    }
+    // Orden importa por las llaves foráneas
+    $this->call([
+        EditorialSeeder::class,
+        GeneroSeeder::class,
+        LibroSeeder::class,
+        UbicacionSeeder::class,
+        AutorSeeder::class,
+        EjemplarSeeder::class,
+    ]);
+}
 }

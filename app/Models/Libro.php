@@ -10,26 +10,33 @@ class Libro extends Model
         'titulo', 'descripcion', 'portada_url', 'stock', 'isbn', 'editorial_id', 'genero_id',
     ];
 
-    // Relación: Libro pertenece a una Editorial
     public function editorial()
     {
-        return $this->belongsTo(Editorial::class)->withDefault([
-            'nombre' => 'Sin editorial',
-        ]);
+        return $this->belongsTo(Editorial::class)->withDefault(['nombre' => 'Sin editorial']);
     }
 
-    // Relación: Libro pertenece a un Género
     public function genero()
     {
-        return $this->belongsTo(Genero::class)->withDefault([
-            'nombre' => 'Sin género',
-        ]);
+        return $this->belongsTo(Genero::class)->withDefault(['nombre' => 'Sin género']);
     }
 
-    /**
-     * Scope reutilizable: filtra libros por texto (título o ISBN).
-     * Uso: Libro::buscar($texto)->get();
-     */
+    public function autores()
+    {
+        return $this->belongsToMany(Autor::class, 'autor_libro');
+    }
+
+    public function ejemplares()
+    {
+        return $this->hasMany(Ejemplar::class);
+    }
+
+    /** stock = cantidad de ejemplares en estado "disponible" */
+    public function sincronizarStock(): void
+    {
+        $this->update(['stock' => $this->ejemplares()->where('estado', 'disponible')->count()]);
+    }
+
+    /** Busca por título, ISBN o nombre de autor. */
     public function scopeBuscar($query, ?string $texto)
     {
         if (! $texto) {
@@ -38,16 +45,27 @@ class Libro extends Model
 
         return $query->where(function ($q) use ($texto) {
             $q->where('titulo', 'like', "%{$texto}%")
-                ->orWhere('isbn', 'like', "%{$texto}%");
+                ->orWhere('isbn', 'like', "%{$texto}%")
+                ->orWhereHas('autores', fn ($a) => $a->where('nombre', 'like', "%{$texto}%"));
         });
     }
 
-    /**
-     * Scope reutilizable: solo libros con stock disponible.
-     * Uso: Libro::conStock()->get();
-     */
     public function scopeConStock($query)
     {
         return $query->where('stock', '>', 0);
+    }
+
+    /** Agrega total_ejemplares y disponibles_count a cada libro (sin N+1). */
+    public function scopeConConteos($query)
+    {
+        return $query->withCount([
+            'ejemplares as total_ejemplares',
+            'ejemplares as disponibles_count' => fn ($q) => $q->where('estado', 'disponible'),
+        ]);
+    }
+
+    public function scopeConDisponibles($query)
+    {
+        return $query->whereHas('ejemplares', fn ($q) => $q->where('estado', 'disponible'));
     }
 }
