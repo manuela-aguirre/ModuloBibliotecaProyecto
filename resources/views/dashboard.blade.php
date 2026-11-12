@@ -84,6 +84,7 @@
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 1rem;
+            align-items: stretch;
         }
 
         .cotec-dashboard-section-heading {
@@ -120,14 +121,15 @@
 
         .cotec-kpi-card {
             position: relative;
+            min-height: 250px;
             background: #ffffff;
             border: 1px solid rgba(20, 83, 45, 0.12);
             border-radius: 1rem;
-            padding: 1.2rem;
+            padding: 1.25rem;
             box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
             display: flex;
             flex-direction: column;
-            gap: 0.6rem;
+            gap: 0.65rem;
             transition: box-shadow 0.2s, transform 0.2s;
             overflow: visible;
         }
@@ -180,16 +182,22 @@
         .cotec-kpi-icon {
             width: 44px;
             height: 44px;
+            flex: 0 0 44px;
             border-radius: 0.65rem;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 1rem;
         }
 
         .cotec-kpi-icon.green { background: #dcfce7; }
         .cotec-kpi-icon.blue { background: #dbeafe; }
         .cotec-kpi-icon.amber { background: #fef3c7; }
         .cotec-kpi-icon.red { background: #fee2e2; }
+        .cotec-kpi-icon.green i { color: #15803d; }
+        .cotec-kpi-icon.blue i { color: #2563eb; }
+        .cotec-kpi-icon.amber i { color: #b45309; }
+        .cotec-kpi-icon.red i { color: #dc2626; }
 
         .cotec-kpi-value {
             font-size: clamp(1.7rem, 2vw, 2.15rem);
@@ -219,7 +227,7 @@
         .cotec-kpi-card.healthy .cotec-kpi-value { color: #166534; }
 
         .cotec-kpi-action {
-            margin-top: 0.2rem;
+            margin-top: auto;
             color: #14532d;
             font-size: 0.78rem;
             font-weight: 700;
@@ -228,7 +236,7 @@
 
         .cotec-kpi-action:hover { text-decoration: underline; text-underline-offset: 3px; }
         .cotec-kpi-action:focus-visible { outline: 2px solid #15803d; outline-offset: 3px; border-radius: 0.2rem; }
-        .cotec-kpi-detail { color: #64748b; font-size: 0.78rem; line-height: 1.4; }
+        .cotec-kpi-detail { min-height: 2.8em; color: #64748b; font-size: 0.78rem; line-height: 1.4; }
 
         .cotec-dashboard-panels {
             margin-top: 1.5rem;

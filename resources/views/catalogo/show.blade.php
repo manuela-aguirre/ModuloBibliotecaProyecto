@@ -2,12 +2,20 @@
     <x-slot name="header"><h2 class="ui-title">{{ $libro->titulo }}</h2></x-slot>
     @include('partials.ui')
 
+    <style>
+        .catalogo-detail {
+            width: 100%;
+            max-width: 820px;
+            margin-inline: auto;
+        }
+    </style>
+
     @php
         $disponibles = $libro->ejemplares->where('estado', 'disponible');
         $porUbicacion = $disponibles->groupBy(fn ($e) => $e->ubicacion?->nombre ?? 'Sin ubicación registrada');
     @endphp
 
-    <article class="cotec-panel ui-wrap" style="max-width:820px;" aria-labelledby="libro-titulo">
+    <article class="cotec-panel ui-wrap catalogo-detail" aria-labelledby="libro-titulo">
         @include('partials.mensajes')
 
         @include('catalogo._portada', ['clase' => 'ui-book-cover--detail'])
