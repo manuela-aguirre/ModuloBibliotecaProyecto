@@ -8,6 +8,7 @@ use App\Models\InventoryMovement;
 use App\Models\Libro;
 use App\Models\Prestamo;
 use App\Models\Reserva;
+use App\Models\Ubicacion;
 use App\Models\User;
 use App\Services\InventoryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -42,11 +43,49 @@ class InventoryAuditTest extends TestCase
         $inventory->changeStatus($copy, 'prestado', $loan);
         $inventory->changeStatus($copy, 'disponible', $loan, 'Ejemplar devuelto.');
 
+        $reservationEvent = $copy->historyEvents()->where('tipo', 'reserva')->firstOrFail();
+        $this->assertStringContainsString($user->name, $reservationEvent->descripcion);
+        $this->assertStringContainsString($user->numero_identificacion, $reservationEvent->descripcion);
+        $this->assertSame($reservation->id, $reservationEvent->referencia_id);
+
+        $loanEvent = $copy->historyEvents()->where('tipo', 'prestamo')->firstOrFail();
+        $this->assertStringContainsString('Fecha límite: '.today()->addDays(7)->format('d/m/Y'), $loanEvent->descripcion);
+        $this->assertSame($loan->id, $loanEvent->referencia_id);
+
         $movements = InventoryMovement::query()->where('libro_id', $book->id)->orderBy('id')->get();
 
         $this->assertSame(['inventario_inicial', 'reserva', 'devolucion'], $movements->pluck('concept')->all());
         $this->assertSame([1, 0, 1], $movements->pluck('balance')->all());
         $this->assertSame(1, $book->fresh()->stock);
+    }
+
+    public function test_ejemplar_history_records_initial_details_and_metadata_changes(): void
+    {
+        $inventory = app(InventoryService::class);
+        $book = $this->createBook();
+        $location = Ubicacion::create(['nombre' => 'Estante A']);
+        $copy = $inventory->createExemplar($book, [
+            'codigo_barras' => 'HIST-001',
+            'signatura' => '005.1 MAR',
+            'ubicacion_id' => $location->id,
+            'coleccion' => 'general',
+        ]);
+
+        $createdEvent = $copy->historyEvents()->where('tipo', 'alta')->firstOrFail();
+        $this->assertStringContainsString('Signatura: 005.1 MAR', $createdEvent->descripcion);
+        $this->assertStringContainsString('Ubicación: Estante A', $createdEvent->descripcion);
+        $this->assertSame('disponible', $createdEvent->estado_nuevo);
+
+        $inventory->updateExemplar($copy, [
+            'signatura' => '005.2 MAR',
+            'numero_entrada' => 'INV-204',
+            'fecha_adquisicion' => '2024-03-10',
+        ]);
+
+        $updatedEvent = $copy->historyEvents()->where('tipo', 'actualizacion_datos')->firstOrFail();
+        $this->assertStringContainsString('Signatura: 005.1 MAR → 005.2 MAR', $updatedEvent->descripcion);
+        $this->assertStringContainsString('Número de entrada: Sin dato → INV-204', $updatedEvent->descripcion);
+        $this->assertStringContainsString('Fecha de adquisición: Sin dato → 10/03/2024', $updatedEvent->descripcion);
     }
 
     public function test_adjustments_that_change_available_stock_require_a_reason(): void

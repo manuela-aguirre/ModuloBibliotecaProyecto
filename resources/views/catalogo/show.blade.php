@@ -10,6 +10,7 @@
     <article class="cotec-panel ui-wrap" style="max-width:820px;" aria-labelledby="libro-titulo">
         @include('partials.mensajes')
 
+        @include('catalogo._portada', ['clase' => 'ui-book-cover--detail'])
         <h3 id="libro-titulo" class="ui-title">{{ $libro->titulo }}</h3>
         <p class="ui-muted">
             <span class="font-semibold">Autor(es):</span>

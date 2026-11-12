@@ -8,13 +8,19 @@
     .libro-form select {
         width: 100%;
         border-radius: 0.75rem;
-        border: 1px solid #dcfce7;
+        border: 1px solid #cbd5e1;
+        background: #fff;
         padding: 0.6rem 0.9rem;
         margin-top: 0.35rem;
     }
+    .libro-form input:focus,
+    .libro-form textarea:focus,
+    .libro-form select:focus { border-color: #15803d; outline: 3px solid rgba(21, 128, 61, 0.15); outline-offset: 1px; }
     .libro-form label { font-weight: 600; color: #14532d; font-size: 0.85rem; }
     .libro-form .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     .libro-form .hint { color: #64748b; font-size: 0.78rem; margin-top: 0.25rem; display: block; }
+    .libro-form .required-mark { color: #b91c1c; margin-left: 0.15rem; }
+    .libro-form .form-note { margin: 0 0 1rem; padding: 0.65rem 0.8rem; border-radius: 0.65rem; background: #f8fafc; color: #64748b; font-size: 0.8rem; }
     .libro-form .actions { margin-top: 1.5rem; display: flex; gap: 0.75rem; }
     .libro-form .btn-cancel { padding: 0.6rem 1.1rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.85rem; text-decoration: none; color: #475569; background: #f1f5f9; }
     .libro-author-list { max-height: 220px; overflow-y: auto; display: grid; gap: 0.5rem; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.75rem; }
@@ -24,8 +30,9 @@
 
 <div class="libro-form">
     <h3 class="mb-3 text-sm font-bold uppercase tracking-wide text-green-900">Información bibliográfica</h3>
+    <p class="form-note">Los campos marcados con <span class="required-mark" aria-hidden="true">*</span> son obligatorios.</p>
     <div class="field">
-        <label for="titulo">Título</label>
+        <label for="titulo">Título<span class="required-mark" aria-hidden="true">*</span></label>
         <input type="text" id="titulo" name="titulo" value="{{ old('titulo', $libro->titulo ?? '') }}" required maxlength="150">
         <x-input-error :messages="$errors->get('titulo')" class="mt-1" />
     </div>
@@ -38,7 +45,7 @@
 
     <div class="grid-2">
         <div class="field">
-            <label for="editorial_id">Editorial</label>
+            <label for="editorial_id">Editorial<span class="required-mark" aria-hidden="true">*</span></label>
             <select id="editorial_id" name="editorial_id" required>
                 <option value="">Selecciona una editorial</option>
                 @foreach ($editoriales as $editorial)
@@ -51,7 +58,7 @@
         </div>
 
         <div class="field">
-            <label for="genero_id">Género</label>
+            <label for="genero_id">Género<span class="required-mark" aria-hidden="true">*</span></label>
             <select id="genero_id" name="genero_id" required>
                 <option value="">Selecciona un género</option>
                 @foreach ($generos as $genero)
@@ -83,19 +90,17 @@
     </div>
 
     <h3 class="mb-3 mt-6 text-sm font-bold uppercase tracking-wide text-green-900">Identificación del libro</h3>
-    <div class="grid-2">
-        <div class="field">
-            <label for="isbn">ISBN</label>
-            <input type="text" id="isbn" name="isbn" maxlength="20" value="{{ old('isbn', $libro->isbn ?? '') }}">
-            <x-input-error :messages="$errors->get('isbn')" class="mt-1" />
-        </div>
+    <div class="field">
+        <label for="isbn">ISBN</label>
+        <input type="text" id="isbn" name="isbn" maxlength="20" value="{{ old('isbn', $libro->isbn ?? '') }}">
+        <x-input-error :messages="$errors->get('isbn')" class="mt-1" />
+    </div>
 
-        <h3 class="mb-3 mt-6 text-sm font-bold uppercase tracking-wide text-green-900">Descubrimiento y acceso digital</h3>
-        <div class="field">
-            <label for="portada_url">URL de la portada (opcional)</label>
-            <input type="url" id="portada_url" name="portada_url" value="{{ old('portada_url', $libro->portada_url ?? '') }}">
-            <x-input-error :messages="$errors->get('portada_url')" class="mt-1" />
-        </div>
+    <h3 class="mb-3 mt-6 text-sm font-bold uppercase tracking-wide text-green-900">Descubrimiento y acceso digital</h3>
+    <div class="field">
+        <label for="portada_url">URL de la portada (opcional)</label>
+        <input type="url" id="portada_url" name="portada_url" value="{{ old('portada_url', $libro->portada_url ?? '') }}">
+        <x-input-error :messages="$errors->get('portada_url')" class="mt-1" />
     </div>
 
     <div class="field">

@@ -86,6 +86,28 @@
             gap: 1rem;
         }
 
+        .cotec-dashboard-section-heading {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 0.5rem 1rem;
+            flex-wrap: wrap;
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        .cotec-dashboard-section-heading h2 {
+            margin: 0;
+            color: #14532d;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .cotec-dashboard-section-heading p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+
         @media (max-width: 1100px) {
             .cotec-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
@@ -101,7 +123,7 @@
             background: #ffffff;
             border: 1px solid rgba(20, 83, 45, 0.12);
             border-radius: 1rem;
-            padding: 1.1rem;
+            padding: 1.2rem;
             box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
             display: flex;
             flex-direction: column;
@@ -114,6 +136,8 @@
             box-shadow: 0 8px 18px rgba(0,0,0,0.1);
             transform: translateY(-2px);
         }
+
+        .cotec-kpi-card:focus-within { outline: 3px solid rgba(21, 128, 61, 0.18); outline-offset: 2px; }
 
         .cotec-kpi-tooltip {
             position: absolute;
@@ -168,14 +192,18 @@
         .cotec-kpi-icon.red { background: #fee2e2; }
 
         .cotec-kpi-value {
-            font-size: 1.8rem;
+            font-size: clamp(1.7rem, 2vw, 2.15rem);
+            line-height: 1.05;
             font-weight: 700;
             color: #111827;
+            letter-spacing: -0.035em;
+            font-variant-numeric: tabular-nums;
         }
 
         .cotec-kpi-label {
             font-size: 0.85rem;
-            color: #6b7280;
+            color: #334155;
+            font-weight: 600;
         }
 
         .cotec-kpi-card.alert .cotec-kpi-value {
@@ -184,6 +212,7 @@
 
         .cotec-kpi-card.alert {
             border-color: #fecaca;
+            border-left: 4px solid #ef4444;
             background: linear-gradient(180deg, #fff 0%, #fffafa 100%);
         }
 
@@ -220,17 +249,18 @@
         .cotec-dashboard-panel h3 {
             margin: 0;
             color: #14532d;
-            font-size: 0.82rem;
+            font-size: 0.95rem;
             font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
+            line-height: 1.3;
         }
 
         .cotec-dashboard-panel-intro { margin: 0.35rem 0 0; color: #64748b; font-size: 0.78rem; }
-        .cotec-dashboard-bar-row { margin-top: 0.85rem; }
-        .cotec-dashboard-bar-label { display: flex; justify-content: space-between; gap: 0.75rem; color: #334155; font-size: 0.86rem; }
+        .cotec-dashboard-bar-row { margin-top: 0.85rem; padding-bottom: 0.7rem; border-bottom: 1px solid #f1f5f9; }
+        .cotec-dashboard-bar-row:last-child { padding-bottom: 0; border-bottom: 0; }
+        .cotec-dashboard-bar-label { display: flex; justify-content: space-between; gap: 0.75rem; color: #334155; font-size: 0.84rem; }
         .cotec-dashboard-bar-label span { min-width: 0; overflow-wrap: anywhere; }
-        .cotec-dashboard-bar-track { margin-top: 0.3rem; height: 0.5rem; overflow: hidden; border-radius: 999px; background: #f1f5f9; }
+        .cotec-dashboard-bar-label strong { color: #0f172a; font-variant-numeric: tabular-nums; }
+        .cotec-dashboard-bar-track { margin-top: 0.4rem; height: 0.55rem; overflow: hidden; border-radius: 999px; background: #f1f5f9; }
         .cotec-dashboard-bar { height: 100%; border-radius: inherit; background: #15803d; }
         .cotec-dashboard-bar.blue { background: #2563eb; }
         .cotec-dashboard-bar.amber { background: #f59e0b; }
@@ -380,6 +410,10 @@
             </div>
 
             <!-- KPIs -->
+            <div class="cotec-dashboard-section-heading">
+                <h2>Resumen general</h2>
+                <p>Indicadores y alertas de operación de la biblioteca</p>
+            </div>
             <section class="cotec-kpi-grid" aria-label="Resumen y alertas de la biblioteca">
                 <article class="cotec-kpi-card {{ $prestamosVencidos > 0 ? 'alert' : 'healthy' }}">
                     <div class="cotec-kpi-icon {{ $prestamosVencidos > 0 ? 'red' : 'green' }}"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></div>
@@ -445,6 +479,10 @@
                 </article>
             </section>
 
+            <div class="cotec-dashboard-section-heading">
+                <h2>Actividad y demanda</h2>
+                <p>Préstamos y solicitudes de los últimos 30 días</p>
+            </div>
             <section class="cotec-dashboard-panels" aria-label="Actividad y demanda de la biblioteca">
                 <article class="cotec-dashboard-panel">
                     <h3>Libros más prestados</h3>

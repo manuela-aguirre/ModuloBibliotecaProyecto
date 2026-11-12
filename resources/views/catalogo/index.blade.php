@@ -22,6 +22,7 @@
         .catalogo-book { display: flex; min-width: 0; flex-direction: column; gap: 0.75rem; padding: 1.1rem; border: 1px solid #e2e8f0; border-radius: 1rem; background: #fff; box-shadow: 0 3px 12px rgba(15, 23, 42, 0.035); transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease; }
         .catalogo-book:hover { transform: translateY(-2px); border-color: #bbf7d0; box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08); }
         .catalogo-book:focus-within { outline: 3px solid rgba(21, 128, 61, 0.2); outline-offset: 2px; }
+        .catalogo-book .ui-book-cover { margin-bottom: 0.15rem; }
         .catalogo-book-title { margin: 0; font-size: 1rem; font-weight: 700; line-height: 1.4; overflow-wrap: anywhere; }
         .catalogo-book-title a { color: #0f172a; text-decoration: none; }
         .catalogo-book-title a:hover { color: #14532d; text-decoration: underline; text-underline-offset: 3px; }
@@ -159,6 +160,7 @@
                 <div class="catalogo-grid">
                     @foreach ($libros as $libro)
                         <article class="catalogo-book" aria-labelledby="libro-{{ $libro->id }}">
+                            @include('catalogo._portada', ['clase' => 'ui-book-cover--card'])
                             <h4 id="libro-{{ $libro->id }}" class="catalogo-book-title">
                                 <a href="{{ route('catalogo.show', $libro) }}">{{ $libro->titulo }}</a>
                             </h4>

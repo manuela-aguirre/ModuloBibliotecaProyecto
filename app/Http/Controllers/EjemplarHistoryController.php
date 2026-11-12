@@ -8,7 +8,7 @@ class EjemplarHistoryController extends Controller
 {
     public function show(Ejemplar $ejemplar)
     {
-        $ejemplar->load('libro');
+        $ejemplar->load(['libro', 'ubicacion']);
         $eventos = $ejemplar->historyEvents()
             ->with(['usuario', 'ubicacionAnterior', 'ubicacionNueva'])
             ->latest('ocurrido_at')

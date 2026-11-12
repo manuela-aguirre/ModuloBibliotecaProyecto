@@ -26,7 +26,15 @@ class InventoryService
                 $this->availableCount($libro),
                 "Ingreso del ejemplar {$ejemplar->codigo_barras}.",
             );
-            app(EjemplarHistoryService::class)->record($ejemplar, 'alta', 'Ejemplar registrado en el inventario.');
+            app(EjemplarHistoryService::class)->record(
+                $ejemplar,
+                'alta',
+                $this->describeExemplar($ejemplar),
+                null,
+                $ejemplar->estado,
+                null,
+                $ejemplar->ubicacion_id,
+            );
 
             return $ejemplar;
         });
@@ -50,11 +58,20 @@ class InventoryService
             $ejemplar = Ejemplar::query()->lockForUpdate()->findOrFail($ejemplar->id);
             $previousState = $ejemplar->estado;
             $previousLocation = $ejemplar->ubicacion_id;
+            $previousAttributes = $ejemplar->getAttributes();
 
             $ejemplar->fill($attributes);
             $ejemplar->save();
+            $metadataChanges = $this->describeMetadataChanges($previousAttributes, $ejemplar->getAttributes());
 
             $this->recordAvailabilityChange($libro, $ejemplar, $previousState, $ejemplar->estado, null, $reason);
+            if ($metadataChanges !== []) {
+                app(EjemplarHistoryService::class)->record(
+                    $ejemplar,
+                    'actualizacion_datos',
+                    implode("\n", $metadataChanges),
+                );
+            }
             if ($previousState !== $ejemplar->estado) {
                 if ($eventType === 'perdida' && $ejemplar->estado !== 'baja'
                     || $eventType === 'reparacion' && ($previousState !== 'danado' || $ejemplar->estado !== 'disponible')) {
@@ -314,5 +331,101 @@ class InventoryService
         }
 
         return 'cambio_estado';
+    }
+
+    private function describeExemplar(Ejemplar $ejemplar): string
+    {
+        $details = [
+            'Ejemplar registrado en el inventario.',
+            'Código de barras: '.$ejemplar->codigo_barras,
+            'Signatura: '.($ejemplar->signatura ?: 'Sin dato'),
+            'Colección: '.(Ejemplar::COLECCIONES[$ejemplar->coleccion] ?? $ejemplar->coleccion),
+            'Tipo de material: '.$ejemplar->tipo_material,
+        ];
+
+        foreach ([
+            'edicion' => 'Edición',
+            'anio_edicion' => 'Año de edición',
+            'numero_factura' => 'Número de factura',
+            'valor' => 'Valor',
+            'fecha_adquisicion' => 'Fecha de adquisición',
+            'numero_entrada' => 'Número de entrada',
+            'paginas' => 'Páginas',
+            'medio_adquisicion' => 'Medio de adquisición',
+            'recibido_por' => 'Recibido por',
+            'fecha_ingreso' => 'Fecha de ingreso',
+        ] as $field => $label) {
+            $value = $ejemplar->getAttribute($field);
+            if ($value !== null && $value !== '') {
+                $details[] = "{$label}: ".$this->formatMetadataValue($field, $value);
+            }
+        }
+
+        if ($ejemplar->ubicacion) {
+            $details[] = 'Ubicación: '.$ejemplar->ubicacion->nombre;
+        } else {
+            $details[] = 'Ubicación: Sin ubicación';
+        }
+
+        return implode(' · ', $details);
+    }
+
+    private function describeMetadataChanges(array $before, array $after): array
+    {
+        $labels = [
+            'codigo_barras' => 'Código de barras',
+            'signatura' => 'Signatura',
+            'edicion' => 'Edición',
+            'anio_edicion' => 'Año de edición',
+            'tipo_material' => 'Tipo de material',
+            'coleccion' => 'Colección',
+            'numero_factura' => 'Número de factura',
+            'valor' => 'Valor',
+            'fecha_adquisicion' => 'Fecha de adquisición',
+            'numero_entrada' => 'Número de entrada',
+            'paginas' => 'Páginas',
+            'medio_adquisicion' => 'Medio de adquisición',
+            'recibido_por' => 'Recibido por',
+            'fecha_ingreso' => 'Fecha de ingreso',
+        ];
+        $changes = [];
+
+        foreach ($labels as $field => $label) {
+            $oldValue = $before[$field] ?? null;
+            $newValue = $after[$field] ?? null;
+
+            if ((string) $oldValue === (string) $newValue) {
+                continue;
+            }
+
+            $changes[] = "{$label}: {$this->formatMetadataValue($field, $oldValue)} → {$this->formatMetadataValue($field, $newValue)}";
+        }
+
+        return $changes;
+    }
+
+    private function formatMetadataValue(string $field, mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return 'Sin dato';
+        }
+
+        if ($field === 'coleccion') {
+            return Ejemplar::COLECCIONES[$value] ?? $value;
+        }
+
+        if ($field === 'medio_adquisicion') {
+            return ['compra' => 'Compra', 'donacion' => 'Donación', 'canje' => 'Canje'][$value] ?? $value;
+        }
+
+        if (in_array($field, ['fecha_adquisicion', 'fecha_ingreso'], true)) {
+            return \Illuminate\Support\Carbon::parse($value)->format('d/m/Y');
+        }
+
+        if ($field === 'valor') {
+            return '$'.number_format((float) $value, 2, ',', '.');
+        }
+
+        return (string) $value;
     }
 }
