@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Ejemplar;
 use App\Models\Libro;
 use App\Models\Ubicacion;
+use App\Services\InventoryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
@@ -13,9 +14,13 @@ class EjemplarController extends Controller
 {
     public function index(Libro $libro)
     {
-        $libro->load('ejemplares.ubicacion');
+        $ejemplares = $libro->ejemplares()
+            ->with('ubicacion')
+            ->orderBy('codigo_barras')
+            ->paginate(30)
+            ->withQueryString();
 
-        return view('ejemplares.index', compact('libro'));
+        return view('ejemplares.index', compact('libro', 'ejemplares'));
     }
 
     public function create(Libro $libro)
@@ -26,11 +31,11 @@ class EjemplarController extends Controller
         ]);
     }
 
-    public function store(Request $request, Libro $libro)
+    public function store(Request $request, Libro $libro, InventoryService $inventory)
     {
         $data = $request->validate(Arr::except($this->rules(), 'estado'));
 
-        $libro->ejemplares()->create($data);
+        $inventory->createExemplar($libro, $data);
 
         return redirect()->route('libros.ejemplares.index', $libro)->with('status', 'Ejemplar registrado.');
     }
@@ -44,7 +49,7 @@ class EjemplarController extends Controller
         ]);
     }
 
-    public function update(Request $request, Ejemplar $ejemplar)
+    public function update(Request $request, Ejemplar $ejemplar, InventoryService $inventory)
     {
         $rules = $this->rules($ejemplar);
 
@@ -53,21 +58,31 @@ class EjemplarController extends Controller
             unset($rules['estado']);
         }
 
-        $ejemplar->update($request->validate($rules));
+        if (isset($rules['estado']) && $request->input('estado') !== $ejemplar->estado) {
+            $rules['motivo'] = ['required', 'string', 'min:10', 'max:255'];
+        } else {
+            $rules['motivo'] = ['nullable', 'string', 'max:255'];
+        }
+
+        $data = $request->validate($rules);
+        $reason = $data['motivo'] ?? null;
+        $eventType = $data['tipo_evento'] ?? null;
+        unset($data['motivo']);
+        unset($data['tipo_evento']);
+
+        $ejemplar = $inventory->updateExemplar($ejemplar, $data, $reason, $eventType);
 
         return redirect()->route('libros.ejemplares.index', $ejemplar->libro)->with('status', 'Ejemplar actualizado.');
     }
 
-    public function destroy(Ejemplar $ejemplar)
+    public function destroy(Ejemplar $ejemplar, InventoryService $inventory)
     {
-        if (in_array($ejemplar->estado, ['prestado', 'reservado']) || $ejemplar->prestamos()->exists()) {
-            return back()->withErrors([
-                'estado' => 'Este ejemplar está en uso o tiene historial de préstamos. Márcalo como "baja" en lugar de eliminarlo.',
-            ]);
+        try {
+            $libro = $ejemplar->libro;
+            $inventory->deleteExemplar($ejemplar);
+        } catch (\Illuminate\Validation\ValidationException $exception) {
+            return back()->withErrors($exception->errors());
         }
-
-        $libro = $ejemplar->libro;
-        $ejemplar->delete();
 
         return redirect()->route('libros.ejemplares.index', $libro)->with('status', 'Ejemplar eliminado.');
     }
@@ -81,6 +96,7 @@ class EjemplarController extends Controller
             'edicion' => ['nullable', 'string', 'max:50'],
             'anio_edicion' => ['nullable', 'integer', 'between:1400,'.date('Y')],
             'tipo_material' => ['required', 'string', 'max:30'],
+            'coleccion' => ['required', Rule::in(array_keys(Ejemplar::COLECCIONES))],
             'numero_factura' => ['nullable', 'string', 'max:50'],
             'valor' => ['nullable', 'numeric', 'min:0'],
             'fecha_adquisicion' => ['nullable', 'date'],
@@ -90,6 +106,7 @@ class EjemplarController extends Controller
             'recibido_por' => ['nullable', 'string', 'max:100'],
             'fecha_ingreso' => ['nullable', 'date'],
             'estado' => ['required', Rule::in(['disponible', 'danado', 'baja'])],
+            'tipo_evento' => ['nullable', Rule::in(['cambio_estado', 'reparacion', 'perdida'])],
         ];
     }
 }

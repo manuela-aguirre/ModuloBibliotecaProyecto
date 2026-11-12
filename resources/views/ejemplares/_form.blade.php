@@ -1,6 +1,7 @@
 @php $e = $ejemplar ?? null; @endphp
 
 <div class="ui-form-grid">
+    <h3 class="col-span-full border-b border-slate-200 pb-2 text-sm font-bold uppercase tracking-wide text-green-900">Identificación del ejemplar</h3>
     <div class="ui-field">
         <label class="ui-label" for="codigo_barras">Código de barras</label>
         <input class="ui-input" id="codigo_barras" name="codigo_barras" value="{{ old('codigo_barras', $e?->codigo_barras) }}" required>
@@ -22,6 +23,16 @@
         <label class="ui-label" for="tipo_material">Tipo de material</label>
         <input class="ui-input" id="tipo_material" name="tipo_material" value="{{ old('tipo_material', $e?->tipo_material ?? 'Libro') }}" required>
     </div>
+    <div class="ui-field">
+        <label class="ui-label" for="coleccion">Colección</label>
+        <select class="ui-select" id="coleccion" name="coleccion" required>
+            @foreach (\App\Models\Ejemplar::COLECCIONES as $valor => $nombre)
+                <option value="{{ $valor }}" @selected(old('coleccion', $e?->coleccion ?? 'general') === $valor)>{{ $nombre }}</option>
+            @endforeach
+        </select>
+        <x-input-error :messages="$errors->get('coleccion')" class="mt-2" />
+    </div>
+    <h3 class="col-span-full border-b border-slate-200 pb-2 text-sm font-bold uppercase tracking-wide text-green-900">Datos de adquisición</h3>
     <div class="ui-field">
         <label class="ui-label" for="edicion">Edición</label>
         <input class="ui-input" id="edicion" name="edicion" value="{{ old('edicion', $e?->edicion) }}">
@@ -60,6 +71,7 @@
             @endforeach
         </select>
     </div>
+    <h3 class="col-span-full border-b border-slate-200 pb-2 text-sm font-bold uppercase tracking-wide text-green-900">Estado y seguimiento</h3>
     <div class="ui-field">
         <label class="ui-label" for="recibido_por">Recibido por</label>
         <input class="ui-input"  id="recibido_por" name="recibido_por" value="{{ old('recibido_por', $e?->recibido_por) }}">
@@ -77,6 +89,20 @@
                     <option value="{{ $valor }}" @selected(old('estado', $e->estado) === $valor)>{{ $texto }}</option>
                 @endforeach
             </select>
+        </div>
+        <div class="ui-field">
+            <label class="ui-label" for="motivo">Motivo del cambio de estado (obligatorio si cambia)</label>
+            <textarea class="ui-input" id="motivo" name="motivo" rows="2" minlength="10" maxlength="255">{{ old('motivo') }}</textarea>
+            <x-input-error :messages="$errors->get('motivo')" class="mt-2" />
+        </div>
+        <div class="ui-field">
+            <label class="ui-label" for="tipo_evento">Tipo de evento</label>
+            <select class="ui-select" id="tipo_evento" name="tipo_evento">
+                <option value="cambio_estado" @selected(old('tipo_evento', 'cambio_estado') === 'cambio_estado')>Cambio de estado</option>
+                <option value="reparacion" @selected(old('tipo_evento') === 'reparacion')>Reparación (de dañado a disponible)</option>
+                <option value="perdida" @selected(old('tipo_evento') === 'perdida')>Pérdida (dar de baja)</option>
+            </select>
+            <x-input-error :messages="$errors->get('tipo_evento')" class="mt-2" />
         </div>
     @endif
 </div>

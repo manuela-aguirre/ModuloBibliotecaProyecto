@@ -27,10 +27,11 @@
             @if ($usuario->prestamos->isEmpty())
                 <div class="ui-empty">Sin préstamos registrados.</div>
             @else
-                <table class="ui-table" style="margin-bottom:1.5rem;">
-                    <thead><tr><th>Libro</th><th>Prestado</th><th>Fecha límite</th><th>Devuelto</th><th>Multa</th></tr></thead>
-                    <tbody>
-                    @foreach ($usuario->prestamos as $p)
+                <div class="ui-table-scroll" role="region" aria-label="Préstamos del usuario, desplazable horizontalmente" tabindex="0" style="margin-bottom:1.5rem;">
+                    <table class="ui-table">
+                        <thead><tr><th>Libro</th><th>Prestado</th><th>Fecha límite</th><th>Devuelto</th><th>Multa</th></tr></thead>
+                        <tbody>
+                        @foreach ($usuario->prestamos as $p)
                         <tr>
                             <td>@foreach ($p->ejemplares as $e) <div>{{ $e->libro->titulo }}</div> @endforeach</td>
                             <td>{{ $p->fecha_prestamo->format('d/m/Y') }}</td>
@@ -46,28 +47,31 @@
                                 @else — @endif
                             </td>
                         </tr>
-                    @endforeach
-                    </tbody>
-                </table>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
             @endif
 
             <h3 class="ui-label" style="font-size:1rem;">Reservas</h3>
             @if ($usuario->reservas->isEmpty())
                 <div class="ui-empty">Sin reservas registradas.</div>
             @else
-                <table class="ui-table">
-                    <thead><tr><th>Libro</th><th>Ejemplar</th><th>Retira el</th><th>Estado</th></tr></thead>
-                    <tbody>
-                    @foreach ($usuario->reservas as $r)
+                <div class="ui-table-scroll" role="region" aria-label="Reservas del usuario, desplazable horizontalmente" tabindex="0">
+                    <table class="ui-table">
+                        <thead><tr><th>Libro</th><th>Ejemplar</th><th>Retira el</th><th>Estado</th></tr></thead>
+                        <tbody>
+                        @foreach ($usuario->reservas as $r)
                         <tr>
                             <td>{{ $r->ejemplar->libro->titulo }}</td>
                             <td>{{ $r->ejemplar->codigo_barras }}</td>
                             <td>{{ $r->fecha_retiro->format('d/m/Y') }}</td>
                             <td><span class="ui-badge">{{ ucfirst($r->estado) }}</span></td>
                         </tr>
-                    @endforeach
-                    </tbody>
-                </table>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
             @endif
         @endif
     </div>

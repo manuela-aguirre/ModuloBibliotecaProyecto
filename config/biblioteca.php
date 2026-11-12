@@ -6,8 +6,19 @@ return [
 
     // Máximo de días hacia adelante que el usuario puede elegir para reclamar su reserva.
     'dias_max_reserva' => (int) env('BIBLIOTECA_DIAS_MAX_RESERVA', 3),
+    'dias_retiro_lista_espera' => (int) env('BIBLIOTECA_DIAS_RETIRO_LISTA_ESPERA', 2),
 
-    // Multa = días de retraso × SMDLV × porcentaje / 100
+    // SMDLV = salario mínimo mensual legal vigente dividido entre 30.
+    'smlmv' => (float) env('BIBLIOTECA_SMLMV', 1750905),
     'smdlv' => (float) env('BIBLIOTECA_SMDLV', 0),
-    'multa_porcentaje_dia' => (float) env('BIBLIOTECA_MULTA_PORCENTAJE', 1),
+    'porcentaje_multa' => [
+        'general' => 1,
+        'reserva' => 2,
+        'otra' => 2,
+    ],
+    'dias_servicio' => [1, 2, 3, 4, 5, 6],
+    'dias_cierre' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('BIBLIOTECA_DIAS_CIERRE', ''))
+    ))),
 ];

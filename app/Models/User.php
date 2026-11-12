@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Concerns\Auditable;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -10,13 +11,31 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
+use Spatie\Activitylog\Support\LogOptions;
 
 #[Fillable(['name', 'email', 'tipo_identificacion', 'numero_identificacion', 'telefono', 'carrera', 'semestre', 'datos_aceptados_at', 'rol', 'limite_prestamos', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use Auditable, HasFactory, Notifiable;
+
+    protected string $auditLog = 'usuarios';
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'email', 'rol', 'limite_prestamos'])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName($this->auditLog)
+            ->setDescriptionForEvent(fn (string $event) => match ($event) {
+                'created' => 'creado',
+                'updated' => 'actualizado',
+                'deleted' => 'eliminado',
+                default => $event,
+            });
+    }
 
     protected function casts(): array
     {
@@ -39,6 +58,11 @@ class User extends Authenticatable
     public function reservas()
     {
         return $this->hasMany(Reserva::class);
+    }
+
+    public function listaEspera()
+    {
+        return $this->hasMany(ListaEspera::class);
     }
 
     /** Reservas activas + ejemplares que tiene prestados ahora. */

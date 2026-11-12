@@ -6,6 +6,7 @@ use App\Models\Ejemplar;
 use App\Models\Prestamo;
 use App\Models\Reserva;
 use App\Models\User;
+use App\Services\InventoryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -15,9 +16,30 @@ class PrestamoController extends Controller
     /** Listado para el bibliotecario. ?estado=abiertos|vencidos|cerrados */
     public function index(Request $request)
     {
-        $estado = $request->get('estado');
+        $filters = $request->validate([
+            'estado' => ['nullable', 'in:abiertos,vencidos,cerrados'],
+            'q' => ['nullable', 'string', 'max:150'],
+        ]);
+        $estado = $filters['estado'] ?? null;
+        $search = trim($filters['q'] ?? '');
+        $baseQuery = Prestamo::query()
+            ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
+                $query->whereHas('user', fn ($user) => $user
+                    ->where('name', 'like', "%{$search}%")
+                    ->orWhere('numero_identificacion', 'like', "%{$search}%"))
+                    ->orWhereHas('ejemplares.libro', fn ($book) => $book->where('titulo', 'like', "%{$search}%"));
+            }));
+        $counts = (clone $baseQuery)
+            ->selectRaw(
+                'COUNT(*) as total,
+                SUM(CASE WHEN fecha_devolucion IS NULL THEN 1 ELSE 0 END) as abiertos,
+                SUM(CASE WHEN fecha_devolucion IS NULL AND fecha_limite < ? THEN 1 ELSE 0 END) as vencidos,
+                SUM(CASE WHEN fecha_devolucion IS NOT NULL THEN 1 ELSE 0 END) as cerrados',
+                [today()->toDateString()],
+            )
+            ->first();
 
-        $prestamos = Prestamo::with(['user', 'ejemplares.libro'])
+        $prestamos = (clone $baseQuery)->with(['user', 'ejemplares.libro'])
             ->when($estado === 'abiertos', fn ($q) => $q->abiertos())
             ->when($estado === 'vencidos', fn ($q) => $q->vencidos())
             ->when($estado === 'cerrados', fn ($q) => $q->whereNotNull('fecha_devolucion'))
@@ -25,7 +47,17 @@ class PrestamoController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return view('prestamos.index', compact('prestamos', 'estado'));
+        return view('prestamos.index', [
+            'prestamos' => $prestamos,
+            'estado' => $estado,
+            'search' => $search,
+            'counts' => [
+                'total' => (int) $counts->total,
+                'abiertos' => (int) $counts->abiertos,
+                'vencidos' => (int) $counts->vencidos,
+                'cerrados' => (int) $counts->cerrados,
+            ],
+        ]);
     }
 
     /** Historial del usuario autenticado. */
@@ -61,7 +93,7 @@ class PrestamoController extends Controller
     }
 
     /** Préstamo directo en mostrador (con o sin reserva previa). */
-    public function store(Request $request)
+    public function store(Request $request, InventoryService $inventory)
     {
         $data = $request->validate([
             'numero_identificacion' => ['required', 'exists:users,numero_identificacion'],
@@ -73,7 +105,7 @@ class PrestamoController extends Controller
         $user = User::where('numero_identificacion', $data['numero_identificacion'])->firstOrFail();
 
         try {
-            $this->procesar($user, $data['codigo_barras'], (int) $data['dias'], $data['observaciones'] ?? null, $request->user()->id);
+            $this->procesar($user, $data['codigo_barras'], (int) $data['dias'], $data['observaciones'] ?? null, $request->user()->id, $inventory);
         } catch (RuntimeException $e) {
             return back()->withInput()->withErrors(['prestamo' => $e->getMessage()]);
         }
@@ -82,7 +114,7 @@ class PrestamoController extends Controller
     }
 
     /** Convierte una reserva activa en préstamo (botón "Entregar"). */
-    public function entregarReserva(Request $request, Reserva $reserva)
+    public function entregarReserva(Request $request, Reserva $reserva, InventoryService $inventory)
     {
         abort_unless($reserva->estado === 'activa', 422, 'La reserva ya no está activa.');
 
@@ -92,7 +124,8 @@ class PrestamoController extends Controller
                 $reserva->ejemplar->codigo_barras,
                 config('biblioteca.dias_prestamo'),
                 'Entrega de reserva #'.$reserva->id,
-                $request->user()->id
+                $request->user()->id,
+                $inventory,
             );
         } catch (RuntimeException $e) {
             return back()->withErrors(['prestamo' => $e->getMessage()]);
@@ -102,28 +135,44 @@ class PrestamoController extends Controller
     }
 
     /** Registra la devolución y calcula la multa si hay retraso. */
-    public function devolver(Request $request, Prestamo $prestamo)
+    public function devolver(Request $request, Prestamo $prestamo, InventoryService $inventory)
     {
         abort_if($prestamo->fecha_devolucion !== null, 422, 'Este préstamo ya fue cerrado.');
 
         $request->validate(['condicion' => ['required', 'in:devuelto,danado']]);
 
-        DB::transaction(function () use ($request, $prestamo) {
+        DB::transaction(function () use ($request, $prestamo, $inventory) {
+            $copiesBefore = $prestamo->ejemplares
+                ->mapWithKeys(fn (Ejemplar $ejemplar) => [$ejemplar->codigo_barras => $ejemplar->pivot->estado])
+                ->all();
+
             foreach ($prestamo->ejemplares as $ejemplar) {
                 if ($ejemplar->pivot->estado !== 'prestado') {
                     continue;
                 }
 
                 $prestamo->ejemplares()->updateExistingPivot($ejemplar->id, ['estado' => $request->condicion]);
-                $ejemplar->update(['estado' => $request->condicion === 'danado' ? 'danado' : 'disponible']);
+                $inventory->changeStatus(
+                    $ejemplar,
+                    $request->condicion === 'danado' ? 'danado' : 'disponible',
+                    $prestamo,
+                    $request->condicion === 'danado' ? 'Ejemplar devuelto dañado.' : 'Ejemplar devuelto.',
+                );
+            }
+
+            $copiesAfter = $prestamo->ejemplares()
+                ->get()
+                ->mapWithKeys(fn (Ejemplar $ejemplar) => [$ejemplar->codigo_barras => $ejemplar->pivot->estado])
+                ->all();
+            if ($copiesBefore !== $copiesAfter) {
+                $this->logLoanCopyChanges($prestamo, $copiesBefore, $copiesAfter, $request->user(), 'updated');
             }
 
             $hoy = today();
-            $diasRetraso = max(0, (int) $prestamo->fecha_limite->diffInDays($hoy, false));
-            $multa = round(
-                $diasRetraso * config('biblioteca.smdlv') * config('biblioteca.multa_porcentaje_dia') / 100,
-                2
-            );
+            $multa = $prestamo->calcularMultaHasta(\Carbon\CarbonImmutable::today());
+            if ($multa === null) {
+                throw new RuntimeException('Configure el salario mínimo mensual vigente antes de calcular multas.');
+            }
 
             $prestamo->update(['fecha_devolucion' => $hoy, 'multa' => $multa]);
         });
@@ -182,9 +231,16 @@ class PrestamoController extends Controller
      * Reglas de negocio del préstamo. Todo ocurre en una transacción
      * y el ejemplar se bloquea para evitar que dos bibliotecarios lo presten a la vez.
      */
-    private function procesar(User $user, string $codigoBarras, int $dias, ?string $observaciones, int $adminId): void
+    private function procesar(
+        User $user,
+        string $codigoBarras,
+        int $dias,
+        ?string $observaciones,
+        int $adminId,
+        InventoryService $inventory,
+    ): void
     {
-        DB::transaction(function () use ($user, $codigoBarras, $dias, $observaciones, $adminId) {
+        DB::transaction(function () use ($user, $codigoBarras, $dias, $observaciones, $adminId, $inventory) {
             $ejemplar = Ejemplar::where('codigo_barras', $codigoBarras)->lockForUpdate()->firstOrFail();
 
             if ($user->tieneVencidos()) {
@@ -214,9 +270,35 @@ class PrestamoController extends Controller
                 'observaciones' => $observaciones,
             ]);
 
+            $copiesBefore = $prestamo->ejemplares()
+                ->get()
+                ->mapWithKeys(fn (Ejemplar $copy) => [$copy->codigo_barras => $copy->pivot->estado])
+                ->all();
             $prestamo->ejemplares()->attach($ejemplar->id, ['estado' => 'prestado']);
-            $ejemplar->update(['estado' => 'prestado']);
+            $inventory->changeStatus($ejemplar, 'prestado', $prestamo);
             $reserva?->update(['estado' => 'retirada']);
+            if ($reserva) {
+                app(\App\Services\WaitlistService::class)->fulfillForReservation($reserva);
+            }
+
+            $copiesAfter = $prestamo->ejemplares()
+                ->get()
+                ->mapWithKeys(fn (Ejemplar $copy) => [$copy->codigo_barras => $copy->pivot->estado])
+                ->all();
+            $this->logLoanCopyChanges($prestamo, $copiesBefore, $copiesAfter, User::findOrFail($adminId), 'updated');
         });
+    }
+
+    private function logLoanCopyChanges(Prestamo $prestamo, array $before, array $after, User $actor, string $event): void
+    {
+        activity('prestamos')
+            ->performedOn($prestamo)
+            ->causedBy($actor)
+            ->event($event)
+            ->withChanges([
+                'old' => ['ejemplares' => $before],
+                'attributes' => ['ejemplares' => $after],
+            ])
+            ->log('ejemplares asociados al préstamo modificados');
     }
 }

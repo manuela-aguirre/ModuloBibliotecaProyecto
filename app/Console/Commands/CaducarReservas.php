@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Reserva;
+use App\Services\InventoryService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -12,16 +13,17 @@ class CaducarReservas extends Command
 
     protected $description = 'Marca como caducadas las reservas no retiradas y libera sus ejemplares';
 
-    public function handle(): int
+    public function handle(InventoryService $inventory): int
     {
         $total = 0;
 
         // get() y no each(): cambiamos "estado" mientras recorremos
         Reserva::activas()->whereDate('fecha_retiro', '<', today())->with('ejemplar')->get()
-            ->each(function (Reserva $reserva) use (&$total) {
-                DB::transaction(function () use ($reserva) {
+            ->each(function (Reserva $reserva) use (&$total, $inventory) {
+                DB::transaction(function () use ($reserva, $inventory) {
                     $reserva->update(['estado' => 'caducada']);
-                    $reserva->ejemplar->update(['estado' => 'disponible']);
+                    app(\App\Services\WaitlistService::class)->cancelForReservation($reserva);
+                    $inventory->changeStatus($reserva->ejemplar, 'disponible', $reserva, 'Reserva vencida.');
                 });
                 $total++;
             });

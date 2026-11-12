@@ -43,6 +43,7 @@ class DatabaseSeeder extends Seeder
         UbicacionSeeder::class,
         AutorSeeder::class,
         EjemplarSeeder::class,
+        DatosDemostracionInventarioSeeder::class,
         PrestamoReservaSeeder::class,
     ]);
 }

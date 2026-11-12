@@ -2,13 +2,18 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
 class Reserva extends Model
 {
+    use Auditable;
+
     protected $table = 'reservas';
 
-    protected $fillable = ['user_id', 'ejemplar_id', 'fecha_retiro', 'estado'];
+    protected string $auditLog = 'reservas';
+
+    protected $fillable = ['user_id', 'ejemplar_id', 'fecha_retiro', 'estado', 'observacion'];
 
     protected function casts(): array
     {

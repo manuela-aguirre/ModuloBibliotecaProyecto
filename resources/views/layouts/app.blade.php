@@ -162,6 +162,10 @@
                 min-width: 0;
             }
 
+            .cotec-mobile-menu-toggle {
+                display: none;
+            }
+
             .cotec-panel {
                 background: white;
                 border-radius: 1.2rem;
@@ -210,8 +214,39 @@
                 }
 
                 .cotec-sidebar {
-                    order: 2;
+                    display: none;
+                    order: 0;
                 }
+
+                .cotec-sidebar.is-open {
+                    display: block;
+                }
+
+                .cotec-mobile-menu-toggle {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    width: 100%;
+                    margin-bottom: 0.75rem;
+                    border: 1px solid var(--cotec-border);
+                    border-radius: 0.9rem;
+                    background: white;
+                    color: var(--cotec-green-900);
+                    padding: 0.8rem 1rem;
+                    font-weight: 700;
+                    cursor: pointer;
+                }
+            }
+
+            @media (max-width: 640px) {
+                .cotec-shell { padding: 0.75rem 0.65rem 1.25rem; }
+                .cotec-main { padding-top: 0.65rem; }
+                .cotec-footer-inner { flex-direction: column; padding: 1.25rem; }
+                .cotec-panel { border-radius: 1rem; }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                .cotec-side-link, .cotec-section-toggle { transition: none; }
             }
         </style>
     </head>
@@ -219,9 +254,13 @@
         <div class="min-h-screen bg-[#edf8f1] text-slate-800">
             @include('layouts.navigation')
 
-            <div class="cotec-shell">
+            <div class="cotec-shell" x-data="{ mobileMenuOpen: false }">
+                <button class="cotec-mobile-menu-toggle" type="button" @click="mobileMenuOpen = !mobileMenuOpen" :aria-expanded="mobileMenuOpen.toString()" aria-controls="cotec-sidebar">
+                    <span><i class="fa-solid fa-bars mr-2" aria-hidden="true"></i>Menú de navegación</span>
+                    <i class="fa-solid" :class="mobileMenuOpen ? 'fa-chevron-up' : 'fa-chevron-down'" aria-hidden="true"></i>
+                </button>
                 <div class="cotec-layout">
-                    <aside class="cotec-sidebar" x-data="{ openOperaciones: true, openConfiguracion: false, openReportes: false }">
+                    <aside id="cotec-sidebar" class="cotec-sidebar" :class="{ 'is-open': mobileMenuOpen }" x-data="{ openOperaciones: true, openConfiguracion: false, openReportes: false }">
 
                         {{-- ===================== OPERACIONES ===================== --}}
                         <div class="cotec-section-label">
@@ -235,8 +274,10 @@
                             @if (auth()->user()?->esAdministrador())
                                 <a href="{{ route('dashboard') }}" class="cotec-side-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
                                 <a href="{{ route('libros.index') }}" class="cotec-side-link {{ request()->routeIs('libros.*', 'ejemplares.*') ? 'active' : '' }}"><i class="fa-solid fa-book-open-reader"></i> Libros y ejemplares</a>
+                                <a href="{{ route('importaciones.catalogo') }}" class="cotec-side-link {{ request()->routeIs('importaciones.catalogo*') ? 'active' : '' }}"><i class="fa-solid fa-file-import"></i> Importar catálogo</a>
                                 <a href="{{ route('prestamos.index') }}" class="cotec-side-link {{ request()->routeIs('prestamos.index', 'prestamos.create') ? 'active' : '' }}"><i class="fa-solid fa-hand-holding-hand"></i> Préstamos</a>
                                 <a href="{{ route('reservas.todas') }}" class="cotec-side-link {{ request()->routeIs('reservas.todas') ? 'active' : '' }}"><i class="fa-solid fa-file-lines"></i> Reservas</a>
+                                <a href="{{ route('adquisiciones.index') }}" class="cotec-side-link {{ request()->routeIs('adquisiciones.*', 'proveedores.*') ? 'active' : '' }}"><i class="fa-solid fa-cart-flatbed"></i> Adquisiciones</a>
                                 <a href="{{ route('usuarios.index') }}" class="cotec-side-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}"><i class="fa-solid fa-user-group"></i> Usuarios</a>
                                 <a href="{{ route('usuarios.historial') }}" class="cotec-side-link {{ request()->routeIs('usuarios.historial') ? 'active' : '' }}"><i class="fa-solid fa-clock-rotate-left"></i> Historial por cédula</a>
                             @endif
@@ -278,9 +319,10 @@
                                 </button>
                             </div>
                             <nav x-show="openReportes" x-transition class="cotec-nav-group">
-                                <a href="{{ route('reportes.prestamos') }}" class="cotec-side-link"><i class="fa-solid fa-file-csv"></i> Préstamos (CSV)</a>
-                                <a href="{{ route('reportes.inventario') }}" class="cotec-side-link"><i class="fa-solid fa-boxes-stacked"></i> Inventario (CSV)</a>
-                                <a href="{{ route('reportes.reservas') }}" class="cotec-side-link"><i class="fa-solid fa-bookmark"></i> Reservas (CSV)</a>
+                                <a href="{{ route('reportes.index') }}" class="cotec-side-link {{ request()->routeIs('reportes.*') ? 'active' : '' }}"><i class="fa-solid fa-file-csv"></i> Descargar reportes</a>
+                                <a href="{{ route('inventory.kardex') }}" class="cotec-side-link {{ request()->routeIs('inventory.kardex') ? 'active' : '' }}"><i class="fa-solid fa-list"></i> Kardex de inventario</a>
+                                <a href="{{ route('inventory.adjust') }}" class="cotec-side-link {{ request()->routeIs('inventory.adjust*') ? 'active' : '' }}"><i class="fa-solid fa-boxes-stacked"></i> Ajustes de inventario</a>
+                                <a href="{{ route('audit.index') }}" class="cotec-side-link {{ request()->routeIs('audit.*') ? 'active' : '' }}"><i class="fa-solid fa-clipboard-check"></i> Auditoría</a>
                             </nav>
                         @endif
                     </aside>

@@ -10,13 +10,15 @@
             <a class="ui-btn" href="{{ route('libros.ejemplares.create', $libro) }}"><i class="fa-solid fa-plus"></i> Agregar ejemplar</a>
         </div>
 
-        @if ($libro->ejemplares->isEmpty())
+        @if ($ejemplares->isEmpty())
             <div class="ui-empty">Este libro aún no tiene ejemplares físicos registrados.</div>
         @else
-            <table class="ui-table">
-                <thead><tr><th>Código de barras</th><th>Signatura</th><th>Ubicación</th><th>Estado</th><th>Acciones</th></tr></thead>
-                <tbody>
-                @foreach ($libro->ejemplares as $e)
+            <p class="ui-result-count mb-3">Mostrando {{ $ejemplares->firstItem() }}–{{ $ejemplares->lastItem() }} de {{ $ejemplares->total() }} ejemplares</p>
+            <div class="ui-table-scroll" role="region" aria-label="Ejemplares del libro, desplazable horizontalmente" tabindex="0">
+                <table class="ui-table">
+                    <thead><tr><th>Código de barras</th><th>Signatura</th><th>Ubicación</th><th>Estado</th><th>Acciones</th></tr></thead>
+                    <tbody>
+                    @foreach ($ejemplares as $e)
                     @php $clase = ['disponible' => 'ok', 'reservado' => 'warn', 'prestado' => 'warn', 'danado' => 'bad', 'baja' => 'bad'][$e->estado] ?? ''; @endphp
                     <tr>
                         <td>{{ $e->codigo_barras }}</td>
@@ -24,6 +26,7 @@
                         <td>{{ $e->ubicacion?->nombre ?? '—' }}</td>
                         <td><span class="ui-badge {{ $clase }}">{{ ucfirst($e->estado) }}</span></td>
                         <td class="ui-inline">
+                            <a class="ui-btn ui-btn-light ui-btn-sm" href="{{ route('ejemplares.historial', $e) }}">Historial</a>
                             <a class="ui-btn ui-btn-light ui-btn-sm" href="{{ route('ejemplares.edit', $e) }}">Editar</a>
                             <form method="POST" action="{{ route('ejemplares.destroy', $e) }}" onsubmit="return confirm('¿Eliminar este ejemplar?');">
                                 @csrf @method('DELETE')
@@ -31,9 +34,11 @@
                             </form>
                         </td>
                     </tr>
-                @endforeach
-                </tbody>
-            </table>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-5">{{ $ejemplares->links() }}</div>
         @endif
     </div>
 </x-app-layout>

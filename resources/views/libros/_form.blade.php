@@ -1,5 +1,5 @@
 <style>
-    .libro-form { max-width: 640px; }
+    .libro-form { max-width: 760px; }
     .libro-form .field { margin-bottom: 1.1rem; }
     .libro-form input[type=text],
     .libro-form input[type=number],
@@ -17,9 +17,13 @@
     .libro-form .hint { color: #64748b; font-size: 0.78rem; margin-top: 0.25rem; display: block; }
     .libro-form .actions { margin-top: 1.5rem; display: flex; gap: 0.75rem; }
     .libro-form .btn-cancel { padding: 0.6rem 1.1rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.85rem; text-decoration: none; color: #475569; background: #f1f5f9; }
+    .libro-author-list { max-height: 220px; overflow-y: auto; display: grid; gap: 0.5rem; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.75rem; }
+    .libro-author-option { display: flex; align-items: center; gap: 0.55rem; color: #334155; font-size: 0.9rem; }
+    @media (max-width: 640px) { .libro-form .grid-2 { grid-template-columns: 1fr; } }
 </style>
 
 <div class="libro-form">
+    <h3 class="mb-3 text-sm font-bold uppercase tracking-wide text-green-900">Información bibliográfica</h3>
     <div class="field">
         <label for="titulo">Título</label>
         <input type="text" id="titulo" name="titulo" value="{{ old('titulo', $libro->titulo ?? '') }}" required maxlength="150">
@@ -60,22 +64,25 @@
         </div>
     </div>
 
-    {{-- NUEVO: autores (relación muchos a muchos) --}}
     <div class="field">
-        <label for="autores">Autores</label>
-        <select id="autores" name="autores[]" multiple size="5">
+        <fieldset>
+            <legend class="font-semibold text-green-900">Autores</legend>
+            <span class="hint">Marca uno o varios autores. Cada opción se puede seleccionar con un clic.</span>
+            <div class="libro-author-list" role="group" aria-label="Seleccionar autores">
             @foreach ($autores as $autor)
-                <option value="{{ $autor->id }}"
-                    @selected(in_array($autor->id, old('autores', isset($libro) ? $libro->autores->pluck('id')->all() : [])))>
-                    {{ $autor->nombre }}
-                </option>
+                <label class="libro-author-option">
+                    <input type="checkbox" name="autores[]" value="{{ $autor->id }}"
+                           @checked(in_array($autor->id, old('autores', isset($libro) ? $libro->autores->pluck('id')->all() : [])))>
+                    <span>{{ $autor->nombre }}</span>
+                </label>
             @endforeach
-        </select>
-        <span class="hint">Mantén Ctrl (⌘ en Mac) para elegir varios.</span>
+            </div>
+        </fieldset>
         <x-input-error :messages="$errors->get('autores')" class="mt-1" />
         <x-input-error :messages="$errors->get('autores.*')" class="mt-1" />
     </div>
 
+    <h3 class="mb-3 mt-6 text-sm font-bold uppercase tracking-wide text-green-900">Identificación del libro</h3>
     <div class="grid-2">
         <div class="field">
             <label for="isbn">ISBN</label>
@@ -83,11 +90,21 @@
             <x-input-error :messages="$errors->get('isbn')" class="mt-1" />
         </div>
 
+        <h3 class="mb-3 mt-6 text-sm font-bold uppercase tracking-wide text-green-900">Descubrimiento y acceso digital</h3>
         <div class="field">
             <label for="portada_url">URL de la portada (opcional)</label>
             <input type="url" id="portada_url" name="portada_url" value="{{ old('portada_url', $libro->portada_url ?? '') }}">
             <x-input-error :messages="$errors->get('portada_url')" class="mt-1" />
         </div>
+    </div>
+
+    <div class="field">
+        <label for="recurso_digital_url">Recurso digital (opcional)</label>
+        <input type="url" id="recurso_digital_url" name="recurso_digital_url" maxlength="2048"
+               value="{{ old('recurso_digital_url', $libro->recurso_digital_url ?? '') }}"
+               aria-describedby="recurso-digital-ayuda">
+        <span class="hint" id="recurso-digital-ayuda">Enlace al recurso autorizado por la biblioteca, por ejemplo, un libro electrónico o material institucional.</span>
+        <x-input-error :messages="$errors->get('recurso_digital_url')" class="mt-1" />
     </div>
 
     <div class="field">

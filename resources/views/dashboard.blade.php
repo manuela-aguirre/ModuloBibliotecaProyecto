@@ -14,12 +14,12 @@
         }
 
         .cotec-dash-wrap {
-            padding: 2rem 1rem;
+            padding: 1.25rem 0;
             font-family: 'Figtree', Arial, sans-serif;
         }
 
         .cotec-dash-inner {
-            max-width: 1100px;
+            max-width: 1240px;
             margin: 0 auto;
         }
 
@@ -29,7 +29,7 @@
             padding: 2rem;
             color: #ffffff;
             box-shadow: 0 10px 25px rgba(0,0,0,0.12);
-            margin-bottom: 2rem;
+            margin-bottom: 1.25rem;
         }
 
         .cotec-dashboard-brand {
@@ -82,29 +82,27 @@
 
         .cotec-kpi-grid {
             display: grid;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
-            gap: 1.25rem;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 1rem;
         }
 
-        @media (max-width: 1150px) {
-            .cotec-kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-        }
-
-        @media (max-width: 900px) {
+        @media (max-width: 1100px) {
             .cotec-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
 
         @media (max-width: 520px) {
             .cotec-kpi-grid { grid-template-columns: 1fr; }
+            .cotec-welcome-card { padding: 1.4rem; }
+            .cotec-welcome-card h1 { font-size: 1.35rem; }
         }
 
         .cotec-kpi-card {
             position: relative;
             background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.85rem;
-            padding: 1.25rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border: 1px solid rgba(20, 83, 45, 0.12);
+            border-radius: 1rem;
+            padding: 1.1rem;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
             display: flex;
             flex-direction: column;
             gap: 0.6rem;
@@ -182,6 +180,64 @@
 
         .cotec-kpi-card.alert .cotec-kpi-value {
             color: #b91c1c;
+        }
+
+        .cotec-kpi-card.alert {
+            border-color: #fecaca;
+            background: linear-gradient(180deg, #fff 0%, #fffafa 100%);
+        }
+
+        .cotec-kpi-card.healthy .cotec-kpi-value { color: #166534; }
+
+        .cotec-kpi-action {
+            margin-top: 0.2rem;
+            color: #14532d;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .cotec-kpi-action:hover { text-decoration: underline; text-underline-offset: 3px; }
+        .cotec-kpi-action:focus-visible { outline: 2px solid #15803d; outline-offset: 3px; border-radius: 0.2rem; }
+        .cotec-kpi-detail { color: #64748b; font-size: 0.78rem; line-height: 1.4; }
+
+        .cotec-dashboard-panels {
+            margin-top: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        .cotec-dashboard-panel {
+            min-width: 0;
+            border: 1px solid rgba(20, 83, 45, 0.12);
+            border-radius: 1rem;
+            background: #fff;
+            padding: 1.1rem;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+        }
+
+        .cotec-dashboard-panel h3 {
+            margin: 0;
+            color: #14532d;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .cotec-dashboard-panel-intro { margin: 0.35rem 0 0; color: #64748b; font-size: 0.78rem; }
+        .cotec-dashboard-bar-row { margin-top: 0.85rem; }
+        .cotec-dashboard-bar-label { display: flex; justify-content: space-between; gap: 0.75rem; color: #334155; font-size: 0.86rem; }
+        .cotec-dashboard-bar-label span { min-width: 0; overflow-wrap: anywhere; }
+        .cotec-dashboard-bar-track { margin-top: 0.3rem; height: 0.5rem; overflow: hidden; border-radius: 999px; background: #f1f5f9; }
+        .cotec-dashboard-bar { height: 100%; border-radius: inherit; background: #15803d; }
+        .cotec-dashboard-bar.blue { background: #2563eb; }
+        .cotec-dashboard-bar.amber { background: #f59e0b; }
+
+        @media (max-width: 720px) {
+            .cotec-dashboard-panels { grid-template-columns: 1fr; }
+            .cotec-kpi-card { padding: 1rem; }
         }
 
         .cotec-book-form-card {
@@ -324,152 +380,141 @@
             </div>
 
             <!-- KPIs -->
-            <div class="cotec-kpi-grid">
+            <section class="cotec-kpi-grid" aria-label="Resumen y alertas de la biblioteca">
+                <article class="cotec-kpi-card {{ $prestamosVencidos > 0 ? 'alert' : 'healthy' }}">
+                    <div class="cotec-kpi-icon {{ $prestamosVencidos > 0 ? 'red' : 'green' }}"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></div>
+                    <div class="cotec-kpi-value">{{ $prestamosVencidos }}</div>
+                    <div class="cotec-kpi-label">Préstamos vencidos</div>
+                    <div class="cotec-kpi-detail">Tasa de vencimiento: {{ $tasaVencimiento }}% de los préstamos activos.</div>
+                    <a class="cotec-kpi-action" href="{{ route('prestamos.index', ['estado' => 'vencidos']) }}">Revisar vencidos <span aria-hidden="true">→</span></a>
+                </article>
 
-                <div class="cotec-kpi-card" tabindex="0">
-                    <div class="cotec-kpi-icon green">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2" style="width:22px;height:22px;">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                        </svg>
-                    </div>
-                    <div class="cotec-kpi-value">{{ $totalLibros ?? 0 }}</div>
-                    <div class="cotec-kpi-label">Títulos en catálogo</div>
-                    <div class="cotec-kpi-tooltip">Total de referencias disponibles en el sistema para consulta y gestión.</div>
-                </div>
-
-                <div class="cotec-kpi-card" tabindex="0">
-                    <div class="cotec-kpi-icon blue">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" style="width:22px;height:22px;">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                            <path d="M9 8h7M9 12h7M9 16h7"/>
-                        </svg>
-                    </div>
-                    <div class="cotec-kpi-value">{{ $disponibilidadStock ?? 0 }}%</div>
-                    <div class="cotec-kpi-label">Disponibilidad del stock</div>
-                    <div class="cotec-kpi-tooltip">Porcentaje de títulos con existencia saludable y sin riesgo operativo por escasez.</div>
-                </div>
-
-                <div class="cotec-kpi-card" tabindex="0">
-                    <div class="cotec-kpi-icon amber">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" style="width:22px;height:22px;">
-                            <path d="M12 2v20"/>
-                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 0 1 0 7H6"/>
-                        </svg>
-                    </div>
-                    <div class="cotec-kpi-value">{{ $prestamosActivos ?? 0 }}</div>
-                    <div class="cotec-kpi-label">Préstamos activos</div>
-                    <div class="cotec-kpi-tooltip">Material que está actualmente en circulación y aún no ha sido devuelto.</div>
-                </div>
-
-                <div class="cotec-kpi-card alert" tabindex="0">
-                    <div class="cotec-kpi-icon red">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" style="width:22px;height:22px;">
-                            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                            <line x1="12" y1="9" x2="12" y2="13"/>
-                            <line x1="12" y1="17" x2="12.01" y2="17"/>
-                        </svg>
-                    </div>
-                    <div class="cotec-kpi-value">{{ $librosBajoStock ?? 0 }}</div>
-                    <div class="cotec-kpi-label">Stock crítico</div>
-                    <div class="cotec-kpi-tooltip">Títulos con escasez de ejemplares o disponibilidad muy baja para atender la demanda.</div>
-                </div>
-
-                <div class="cotec-kpi-card alert" tabindex="0">
-                    <div class="cotec-kpi-icon red">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2" style="width:22px;height:22px;">
-                            <path d="M12 8v4"/>
-                            <path d="M12 16h.01"/>
-                            <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
-                        </svg>
-                    </div>
-                    <div class="cotec-kpi-value">{{ $tasaVencimiento ?? 0 }}%</div>
-                    <div class="cotec-kpi-label">Tasa de vencimiento</div>
-                    <div class="cotec-kpi-tooltip">Porcentaje de préstamos activos que están fuera de plazo, indicador clave de morosidad.</div>
-                </div>
-
-                <div class="cotec-kpi-card" tabindex="0">
-                    <div class="cotec-kpi-icon amber">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" style="width:22px;height:22px;">
-                            <path d="M12 1v22"/>
-                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 0 1 0 7H6"/>
-                        </svg>
-                    </div>
-                    <div class="cotec-kpi-value">${{ number_format($multasPendientes ?? 0, 0, ',', '.') }}</div>
+                <article class="cotec-kpi-card {{ $multasPendientes > 0 ? 'alert' : 'healthy' }}">
+                    <div class="cotec-kpi-icon {{ $multasPendientes > 0 ? 'red' : 'green' }}"><i class="fa-solid fa-coins" aria-hidden="true"></i></div>
+                    <div class="cotec-kpi-value">${{ number_format($multasPendientes, 0, ',', '.') }}</div>
                     <div class="cotec-kpi-label">Multas pendientes</div>
-                    <div class="cotec-kpi-tooltip">Suma de las multas generadas por devoluciones tardías que aún no se han pagado.</div>
-                </div>
+                    <div class="cotec-kpi-detail">Incluye multas registradas y acumuladas de préstamos vencidos.</div>
+                    <a class="cotec-kpi-action" href="{{ route('prestamos.index') }}">Gestionar préstamos <span aria-hidden="true">→</span></a>
+                </article>
 
-                <div class="cotec-kpi-card" tabindex="0">
-                    <div class="cotec-kpi-icon green">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2" style="width:22px;height:22px;">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                            <path d="M8 9h8M8 13h5"/>
-                        </svg>
-                    </div>
-                    <div class="cotec-kpi-value">{{ $usoCatalogo ?? 0 }}%</div>
-                    <div class="cotec-kpi-label">Uso del catálogo</div>
-                    <div class="cotec-kpi-tooltip">Relación entre préstamos activos y títulos del catálogo para medir demanda real.</div>
-                </div>
+                <article class="cotec-kpi-card {{ $librosBajoStock > 0 ? 'alert' : 'healthy' }}">
+                    <div class="cotec-kpi-icon {{ $librosBajoStock > 0 ? 'red' : 'green' }}"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i></div>
+                    <div class="cotec-kpi-value">{{ $librosBajoStock }}</div>
+                    <div class="cotec-kpi-label">Títulos con stock crítico</div>
+                    <div class="cotec-kpi-detail">Dos o menos ejemplares disponibles.</div>
+                    <a class="cotec-kpi-action" href="{{ route('libros.index') }}">Revisar catálogo <span aria-hidden="true">→</span></a>
+                </article>
 
-                <div class="cotec-kpi-card" tabindex="0">
-                    <div class="cotec-kpi-icon blue">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" style="width:22px;height:22px;">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                            <circle cx="9" cy="7" r="4"/>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                        </svg>
-                    </div>
-                    <div class="cotec-kpi-value">{{ $totalUsuarios ?? 0 }}</div>
+                <article class="cotec-kpi-card">
+                    <div class="cotec-kpi-icon amber"><i class="fa-solid fa-book-open" aria-hidden="true"></i></div>
+                    <div class="cotec-kpi-value">{{ $prestamosActivos }}</div>
+                    <div class="cotec-kpi-label">Préstamos activos</div>
+                    <div class="cotec-kpi-detail">Material que aún está en circulación.</div>
+                    <a class="cotec-kpi-action" href="{{ route('prestamos.index', ['estado' => 'abiertos']) }}">Ver préstamos activos <span aria-hidden="true">→</span></a>
+                </article>
+
+                <article class="cotec-kpi-card">
+                    <div class="cotec-kpi-icon blue"><i class="fa-solid fa-bookmark" aria-hidden="true"></i></div>
+                    <div class="cotec-kpi-value">{{ $reservasActivas }}</div>
+                    <div class="cotec-kpi-label">Reservas activas</div>
+                    <div class="cotec-kpi-detail">Solicitudes pendientes de retiro o entrega.</div>
+                    <a class="cotec-kpi-action" href="{{ route('reservas.todas', ['estado' => 'activa']) }}">Gestionar reservas <span aria-hidden="true">→</span></a>
+                </article>
+
+                <article class="cotec-kpi-card">
+                    <div class="cotec-kpi-icon green"><i class="fa-solid fa-book" aria-hidden="true"></i></div>
+                    <div class="cotec-kpi-value">{{ $totalLibros }}</div>
+                    <div class="cotec-kpi-label">Títulos en catálogo</div>
+                    <div class="cotec-kpi-detail">Referencias bibliográficas registradas.</div>
+                    <a class="cotec-kpi-action" href="{{ route('libros.index') }}">Abrir catálogo administrativo <span aria-hidden="true">→</span></a>
+                </article>
+
+                <article class="cotec-kpi-card">
+                    <div class="cotec-kpi-icon blue"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i></div>
+                    <div class="cotec-kpi-value">{{ $disponibilidadStock }}%</div>
+                    <div class="cotec-kpi-label">Disponibilidad saludable</div>
+                    <div class="cotec-kpi-detail">{{ $stockSaludable }} títulos superan el umbral operativo.</div>
+                </article>
+
+                <article class="cotec-kpi-card">
+                    <div class="cotec-kpi-icon blue"><i class="fa-solid fa-users" aria-hidden="true"></i></div>
+                    <div class="cotec-kpi-value">{{ $totalUsuarios }}</div>
                     <div class="cotec-kpi-label">Usuarios registrados</div>
-                    <div class="cotec-kpi-tooltip">Cantidad real de usuarios registrados en la plataforma, independientemente del uso del catálogo.</div>
-                </div>
+                    <div class="cotec-kpi-detail">Cuentas registradas en la plataforma.</div>
+                    <a class="cotec-kpi-action" href="{{ route('usuarios.index') }}">Administrar usuarios <span aria-hidden="true">→</span></a>
+                </article>
+            </section>
 
-            </div>
-
-            <div style="margin-top:2rem;display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));">
-                <div style="border:1px solid #dcfce7;border-radius:1rem;background:#fff;padding:1.1rem;">
-                    <div style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#14532d;">Libros más prestados</div>
+            <section class="cotec-dashboard-panels" aria-label="Actividad y demanda de la biblioteca">
+                <article class="cotec-dashboard-panel">
+                    <h3>Libros más prestados</h3>
+                    <p class="cotec-dashboard-panel-intro">Últimos 30 días · {{ $periodoDesde->format('d/m/Y') }} – {{ $periodoHasta->format('d/m/Y') }} · {{ $prestamosUltimos30Dias }} préstamos</p>
                     @forelse ($masPrestados as $l)
-                        <div style="margin-top:.8rem;">
-                            <div style="display:flex;justify-content:space-between;gap:1rem;font-size:.88rem;color:#334155;">
+                        <div class="cotec-dashboard-bar-row">
+                            <div class="cotec-dashboard-bar-label">
                                 <span>{{ $l->titulo }}</span><strong>{{ $l->total }}</strong>
                             </div>
-                            <div style="margin-top:.3rem;height:8px;border-radius:999px;background:#f0fdf4;">
-                                <div style="height:8px;border-radius:999px;background:#16a34a;width:{{ round($l->total / $masPrestados->first()->total * 100) }}%;"></div>
+                            <div class="cotec-dashboard-bar-track" role="img" aria-label="{{ $l->total }} préstamos">
+                                <div class="cotec-dashboard-bar" style="width:{{ round($l->total / max(1, (int) $masPrestados->max('total')) * 100) }}%;"></div>
                             </div>
                         </div>
                     @empty
-                        <p style="margin-top:.8rem;font-size:.88rem;color:#64748b;">Aún no hay préstamos registrados.</p>
+                        <p class="cotec-dashboard-panel-intro">No hay préstamos registrados en este periodo.</p>
                     @endforelse
-                </div>
+                </article>
 
-                <div style="border:1px solid #dcfce7;border-radius:1rem;background:#fff;padding:1.1rem;">
-                    <div style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#14532d;">Préstamos por mes (últimos 6)</div>
+                <article class="cotec-dashboard-panel">
+                    <h3>Préstamos por mes</h3>
+                    <p class="cotec-dashboard-panel-intro">Evolución de los últimos seis meses.</p>
                     @php $maxMes = max(1, max(array_column($prestamosPorMes, 'total'))); @endphp
                     @foreach ($prestamosPorMes as $m)
-                        <div style="margin-top:.8rem;">
-                            <div style="display:flex;justify-content:space-between;font-size:.88rem;color:#334155;">
+                        <div class="cotec-dashboard-bar-row">
+                            <div class="cotec-dashboard-bar-label">
                                 <span>{{ ucfirst($m['mes']) }}</span><strong>{{ $m['total'] }}</strong>
                             </div>
-                            <div style="margin-top:.3rem;height:8px;border-radius:999px;background:#eff6ff;">
-                                <div style="height:8px;border-radius:999px;background:#2563eb;width:{{ round($m['total'] / $maxMes * 100) }}%;"></div>
+                            <div class="cotec-dashboard-bar-track" role="img" aria-label="{{ $m['total'] }} préstamos">
+                                <div class="cotec-dashboard-bar blue" style="width:{{ round($m['total'] / $maxMes * 100) }}%;"></div>
                             </div>
                         </div>
                     @endforeach
-                    <p style="margin-top:1rem;font-size:.82rem;color:#64748b;">Reservas activas ahora: <strong>{{ $reservasActivas }}</strong></p>
-                </div>
-            </div>
+                </article>
 
-            <div class="mt-8 grid gap-4 md:grid-cols-1">
-                <div class="rounded-2xl border border-[#dbeafe] bg-[#eff6ff] p-4">
-                    <div class="text-xs font-semibold uppercase tracking-[0.18em] text-[#1d4ed8]">Cobertura</div>
-                    <div class="mt-2 text-2xl font-bold text-[#1d4ed8]">{{ $stockSaludable ?? 0 }}</div>
-                    <p class="mt-1 text-sm text-slate-600">Títulos con stock saludable por encima del umbral operativo.</p>
-                </div>
-            </div>
+                <article class="cotec-dashboard-panel">
+                    <h3>Demanda por carrera</h3>
+                    <p class="cotec-dashboard-panel-intro">Préstamos de los últimos 30 días.</p>
+                    @php $maxCarrera = max(1, (int) $demandaPorCarrera->max('total')); @endphp
+                    @forelse ($demandaPorCarrera as $fila)
+                        <div class="cotec-dashboard-bar-row">
+                            <div class="cotec-dashboard-bar-label">
+                                <span>{{ $fila->carrera }}</span><strong>{{ $fila->total }}</strong>
+                            </div>
+                            <div class="cotec-dashboard-bar-track" role="img" aria-label="{{ $fila->total }} préstamos">
+                                <div class="cotec-dashboard-bar blue" style="width:{{ round($fila->total / $maxCarrera * 100) }}%;"></div>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="cotec-dashboard-panel-intro">No hay préstamos por carrera en este periodo.</p>
+                    @endforelse
+                </article>
+
+                <article class="cotec-dashboard-panel">
+                    <h3>Títulos con lista de espera</h3>
+                    <p class="cotec-dashboard-panel-intro">Personas en espera: <strong>{{ $personasEnEspera }}</strong></p>
+                    @php $maxEspera = max(1, (int) $titulosEnEspera->max('total')); @endphp
+                    @forelse ($titulosEnEspera as $titulo)
+                        <div class="cotec-dashboard-bar-row">
+                            <div class="cotec-dashboard-bar-label">
+                                <span>{{ $titulo->titulo }}</span><strong>{{ $titulo->total }}</strong>
+                            </div>
+                            <div class="cotec-dashboard-bar-track" role="img" aria-label="{{ $titulo->total }} personas en espera">
+                                <div class="cotec-dashboard-bar amber" style="width:{{ round($titulo->total / $maxEspera * 100) }}%;"></div>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="cotec-dashboard-panel-intro">No hay personas en lista de espera.</p>
+                    @endforelse
+                </article>
+            </section>
 
         </div>
     </div>

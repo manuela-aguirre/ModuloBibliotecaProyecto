@@ -1,29 +1,33 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Profile') }}
-        </h2>
+        <h2 class="ui-title">Mi perfil</h2>
     </x-slot>
+    @include('partials.ui')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-profile-information-form')
-                </div>
-            </div>
+    <style>
+        .profile-page { display: grid; gap: 1.25rem; }
+        .profile-section { padding: 1.25rem; border: 1px solid #e2e8f0; border-radius: 1rem; background: #fff; }
+        .profile-section h2 { color: #14532d; font-weight: 700; }
+        .profile-section p { color: #64748b; }
+        .profile-section label { color: #14532d; font-weight: 600; }
+        .profile-section input:not([type=checkbox]) { border-color: #cbd5e1; border-radius: 0.75rem; }
+        .profile-section input:focus { border-color: #15803d; outline: 3px solid rgba(21, 128, 61, 0.15); }
+        .profile-section button { border-radius: 0.75rem; }
+        @media (max-width: 640px) { .profile-section { padding: 1rem; } }
+    </style>
 
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-password-form')
-                </div>
-            </div>
-
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.delete-user-form')
-                </div>
-            </div>
+    <div class="cotec-panel ui-wrap">
+        <p class="ui-page-intro mb-5">Actualiza tu información personal y las opciones de seguridad de tu cuenta.</p>
+        <div class="profile-page">
+            <section class="profile-section">
+                @include('profile.partials.update-profile-information-form')
+            </section>
+            <section class="profile-section">
+                @include('profile.partials.update-password-form')
+            </section>
+            <section class="profile-section">
+                @include('profile.partials.delete-user-form')
+            </section>
         </div>
     </div>
 </x-app-layout>

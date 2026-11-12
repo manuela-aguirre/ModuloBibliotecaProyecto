@@ -8,6 +8,7 @@ use App\Models\Prestamo;
 use App\Models\Reserva;
 use App\Models\User;
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 use RuntimeException;
 
@@ -121,24 +122,25 @@ class PrestamoReservaSeeder extends Seeder
         $ejemplar ??= $this->tomar();
         $limite = $inicio->copy()->addDays($dias);
 
-        $multa = 0;
-        if ($devuelto && $devuelto->gt($limite)) {
-            $smdlv = config('biblioteca.smdlv') ?: 47450;
-            $multa = round($limite->diffInDays($devuelto) * $smdlv * config('biblioteca.multa_porcentaje_dia') / 100, 2);
-        }
-
         $prestamo = Prestamo::create([
             'user_id' => $user->id,
             'registrado_por' => $this->admin->id,
             'fecha_prestamo' => $inicio,
             'fecha_limite' => $limite,
             'fecha_devolucion' => $devuelto,
-            'multa' => $multa,
-            'multa_pagada' => $multa > 0 && $multaPagada,
+            'multa' => 0,
+            'multa_pagada' => false,
             'observaciones' => $observaciones,
         ]);
 
         $prestamo->ejemplares()->attach($ejemplar->id, ['estado' => $devuelto ? $condicion : 'prestado']);
+        $multa = $devuelto && $devuelto->gt($limite)
+            ? ($prestamo->calcularMultaHasta(CarbonImmutable::instance($devuelto)) ?? 0)
+            : 0;
+        $prestamo->update([
+            'multa' => $multa,
+            'multa_pagada' => $multa > 0 && $multaPagada,
+        ]);
 
         $ejemplar->update(['estado' => match (true) {
             ! $devuelto => 'prestado',

@@ -2,12 +2,14 @@
     <x-slot name="header">
         <h2 class="cotec-header-title">Catálogo de Libros</h2>
     </x-slot>
+    @include('partials.ui')
 
     <style>
         .cotec-header-title { font-family: 'Figtree', Arial, sans-serif; font-weight: 600; font-size: 1.25rem; color: #14532d; }
         .libros-wrap { padding: 1.5rem 1rem; }
         .libros-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
-        .libros-search input { border-radius: 0.75rem; border: 1px solid #dcfce7; padding: 0.55rem 0.9rem; min-width: 260px; }
+        .libros-search { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .libros-search input { border-radius: 0.75rem; border: 1px solid #cbd5e1; padding: 0.55rem 0.9rem; min-width: min(100%, 340px); }
         .libros-btn-new { background: #14532d; color: white; padding: 0.6rem 1.1rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
         .libros-btn-new:hover { background: #166534; }
         table.libros-table { width: 100%; border-collapse: collapse; background: white; border-radius: 1rem; overflow: hidden; }
@@ -18,6 +20,9 @@
         .libros-actions a, .libros-actions button { font-size: 0.78rem; font-weight: 600; margin-right: 0.75rem; text-decoration: none; }
         .libros-actions a.edit { color: #14532d; }
         .libros-actions button.delete { color: #b91c1c; background: none; border: none; cursor: pointer; padding: 0; }
+        .libros-table-wrap { width: 100%; max-width: 100%; overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 1rem; }
+        .libros-table th:last-child, .libros-table td:last-child { min-width: 250px; white-space: nowrap; }
+        @media (max-width: 720px) { .libros-table { min-width: 760px; } }
         .status-banner { background: #dcfce7; color: #14532d; padding: 0.75rem 1rem; border-radius: 0.75rem; margin-bottom: 1rem; font-weight: 600; font-size: 0.88rem; }
         .empty-state { text-align: center; padding: 3rem 1rem; color: #64748b; }
     </style>
@@ -28,8 +33,13 @@
         @endif
 
         <div class="libros-toolbar">
-            <form method="GET" action="{{ route('libros.index') }}" class="libros-search">
-                <input type="text" name="q" value="{{ $q }}" placeholder="Título, autor, ISBN, código de barras, signatura o palabra clave...">
+            <form method="GET" action="{{ route('libros.index') }}" class="libros-search" role="search">
+                <label class="sr-only" for="busqueda-libros">Buscar libros</label>
+                <input id="busqueda-libros" type="search" name="q" value="{{ $q }}" placeholder="Título, autor, ISBN, código de barras o signatura">
+                <button class="ui-btn ui-btn-light" type="submit">Buscar</button>
+                @if ($q)
+                    <a class="ui-btn ui-btn-light" href="{{ route('libros.index') }}">Limpiar</a>
+                @endif
             </form>
 
             <a href="{{ route('libros.create') }}" class="libros-btn-new">
@@ -38,10 +48,12 @@
         </div>
 
         @if ($libros->isEmpty())
-            <div class="empty-state">No hay libros registrados todavía.</div>
+            <div class="empty-state">{{ $q ? 'No se encontraron libros con esa búsqueda.' : 'No hay libros registrados todavía.' }}</div>
         @else
-            <table class="libros-table">
-                <thead>
+            <p class="ui-result-count mb-3">Mostrando {{ $libros->firstItem() }}–{{ $libros->lastItem() }} de {{ $libros->total() }} títulos</p>
+            <div class="libros-table-wrap" role="region" aria-label="Libros registrados, desplazable horizontalmente" tabindex="0">
+                <table class="libros-table">
+                    <thead>
                     <tr>
                         <th>Título</th>
                         <th>ISBN</th>
@@ -75,12 +87,11 @@
 </td>
                         </tr>
                     @endforeach
-                </tbody>
-            </table>
-
-            <div style="margin-top:1.25rem;">
-                {{ $libros->links() }}
+                    </tbody>
+                </table>
             </div>
+
+            <div style="margin-top:1.25rem;">{{ $libros->links() }}</div>
         @endif
     </div>
 </x-app-layout>

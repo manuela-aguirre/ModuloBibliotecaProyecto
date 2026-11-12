@@ -2,11 +2,18 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
+use App\Support\CalendarioBiblioteca;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 
 class Prestamo extends Model
 {
+    use Auditable;
+
     protected $table = 'prestamos';
+
+    protected string $auditLog = 'prestamos';
 
     protected $fillable = [
         'user_id', 'registrado_por', 'fecha_prestamo', 'fecha_limite',
@@ -55,5 +62,54 @@ class Prestamo extends Model
     public function estaVencido(): bool
     {
         return $this->fecha_devolucion === null && $this->fecha_limite->lt(today());
+    }
+
+    /**
+     * Multa acumulada hasta hoy para préstamos abiertos, o multa final si ya se devolvió.
+     * Devuelve null si la tarifa diaria aún no está configurada.
+     */
+    public function multaActual(): ?float
+    {
+        if ($this->fecha_devolucion !== null) {
+            return (float) $this->multa;
+        }
+
+        if ($this->salarioMinimoMensual() <= 0) {
+            return null;
+        }
+
+        return $this->calcularMultaHasta(CarbonImmutable::today());
+    }
+
+    public function calcularMultaHasta(CarbonImmutable $fecha): ?float
+    {
+        $salarioMinimo = $this->salarioMinimoMensual();
+        if ($salarioMinimo <= 0) {
+            return null;
+        }
+
+        $this->loadMissing('ejemplares');
+        $diasServicio = CalendarioBiblioteca::contarDiasServicio(
+            CarbonImmutable::parse($this->fecha_limite)->addDay(),
+            $fecha,
+        );
+
+        $porcentajeAcumulado = $this->ejemplares->sum(
+            fn (Ejemplar $ejemplar) => (float) config('biblioteca.porcentaje_multa.'.$ejemplar->coleccion, 0)
+        );
+
+        return round($diasServicio * ($salarioMinimo / 30) * $porcentajeAcumulado / 100, 2);
+    }
+
+    private function salarioMinimoMensual(): float
+    {
+        $smdlv = (float) config('biblioteca.smdlv', 0);
+        if ($smdlv > 0) {
+            return $smdlv * 30;
+        }
+
+        $salarioMinimo = (float) config('biblioteca.smlmv', 0);
+
+        return $salarioMinimo;
     }
 }

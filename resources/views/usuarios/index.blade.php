@@ -4,6 +4,7 @@
             Usuarios registrados
         </h2>
     </x-slot>
+    @include('partials.ui')
 
     <style>
         .cotec-header-title {
@@ -177,13 +178,40 @@
                 </div>
             </div>
 
+            @include('partials.mensajes')
+            @error('rol') <p style="color:#991b1b;font-size:.85rem;padding:0 1.5rem;">{{ $message }}</p> @enderror
+            <form method="GET" action="{{ route('usuarios.index') }}" class="flex flex-wrap items-end gap-3 px-6 py-4">
+                <div class="ui-field mb-0 min-w-[min(100%,18rem)] flex-1">
+                    <label class="ui-label" for="usuarios-busqueda">Buscar usuarios</label>
+                    <input class="ui-input" id="usuarios-busqueda" type="search" name="q" value="{{ $search }}" placeholder="Nombre, correo o identificación">
+                </div>
+                <div class="ui-field mb-0 min-w-40">
+                    <label class="ui-label" for="usuarios-rol">Rol</label>
+                    <select class="ui-select" id="usuarios-rol" name="rol">
+                        <option value="">Todos los roles</option>
+                        <option value="usuario" @selected($role === 'usuario')>Usuario</option>
+                        <option value="administrador" @selected($role === 'administrador')>Bibliotecario</option>
+                    </select>
+                </div>
+                <div class="ui-field mb-0 min-w-40">
+                    <label class="ui-label" for="usuarios-verificacion">Verificación</label>
+                    <select class="ui-select" id="usuarios-verificacion" name="verificacion">
+                        <option value="">Todos</option>
+                        <option value="verificados" @selected($verification === 'verificados')>Verificados</option>
+                        <option value="pendientes" @selected($verification === 'pendientes')>Pendientes</option>
+                    </select>
+                </div>
+                <button class="ui-btn ui-btn-light" type="submit">Filtrar</button>
+                @if ($search || $role || $verification)
+                    <a class="text-sm font-semibold text-slate-600 underline" href="{{ route('usuarios.index') }}">Limpiar</a>
+                @endif
+            </form>
+
             @if ($usuarios->isEmpty())
-                <div class="empty-state">No hay usuarios registrados todavía.</div>
+                <div class="empty-state">{{ $search || $role || $verification ? 'No se encontraron usuarios con esos filtros.' : 'No hay usuarios registrados todavía.' }}</div>
             @else
-                <div class="usuarios-table-wrap">
-                    @include('partials.ui')
-                    @include('partials.mensajes')
-                    @error('rol') <p style="color:#991b1b;font-size:.85rem;padding:.5rem 1.5rem;">{{ $message }}</p> @enderror
+                <p class="ui-result-count px-6 pb-3">Mostrando {{ $usuarios->firstItem() }}–{{ $usuarios->lastItem() }} de {{ $usuarios->total() }} usuarios</p>
+                <div class="usuarios-table-wrap ui-table-scroll" role="region" aria-label="Usuarios registrados, desplazable horizontalmente" tabindex="0">
                     <table class="usuarios-table">
                         <thead>
                             <tr>
@@ -227,6 +255,7 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="px-6 py-4">{{ $usuarios->links() }}</div>
             @endif
         </div>
     </div>

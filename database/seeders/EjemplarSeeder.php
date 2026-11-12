@@ -5,11 +5,12 @@ namespace Database\Seeders;
 use App\Models\Ejemplar;
 use App\Models\Libro;
 use App\Models\Ubicacion;
+use App\Services\InventoryService;
 use Illuminate\Database\Seeder;
 
 class EjemplarSeeder extends Seeder
 {
-    public function run(): void
+    public function run(InventoryService $inventory): void
     {
         $ubicaciones = Ubicacion::pluck('id');
 
@@ -17,8 +18,7 @@ class EjemplarSeeder extends Seeder
             $cantidad = $libro->stock;
 
             for ($i = 1; $i <= $cantidad; $i++) {
-                Ejemplar::create([
-                    'libro_id' => $libro->id,
+                $inventory->createExemplar($libro, [
                     'ubicacion_id' => $ubicaciones->random(),
                     'codigo_barras' => sprintf('COT-%04d-%02d', $libro->id, $i),
                     'signatura' => sprintf('SIG-%04d', $libro->id),

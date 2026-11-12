@@ -2,12 +2,20 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
 class Libro extends Model
 {
+    use Auditable;
+
+    protected string $auditLog = 'libros';
+
+    protected array $auditExcept = ['stock'];
+
     protected $fillable = [
-        'titulo', 'descripcion', 'portada_url', 'stock', 'isbn', 'palabras_clave', 'editorial_id', 'genero_id',
+        'titulo', 'descripcion', 'portada_url', 'recurso_digital_url', 'stock', 'isbn',
+        'palabras_clave', 'editorial_id', 'genero_id',
     ];
 
     public function editorial()
@@ -30,6 +38,11 @@ class Libro extends Model
         return $this->hasMany(Ejemplar::class);
     }
 
+    public function movimientosInventario()
+    {
+        return $this->hasMany(InventoryMovement::class);
+    }
+
     /** stock = cantidad de ejemplares en estado "disponible" */
     public function sincronizarStock(): void
     {
@@ -39,19 +52,31 @@ class Libro extends Model
     /** Busca por título, ISBN o nombre de autor. */
      public function scopeBuscar($query, ?string $texto)
 {
-    if (! $texto) {
-        return $query;
+    $terminos = collect(preg_split('/\s+/u', trim((string) $texto), -1, PREG_SPLIT_NO_EMPTY))
+        ->filter()
+        ->unique()
+        ->take(8);
+
+    foreach ($terminos as $termino) {
+        $query->where(function ($q) use ($termino) {
+            $coincidencia = '%'.$termino.'%';
+
+            $q->where('titulo', 'like', $coincidencia)
+                ->orWhere('isbn', 'like', $coincidencia)
+                ->orWhere('palabras_clave', 'like', $coincidencia)
+                ->orWhereHas('autores', fn ($a) => $a->where('nombre', 'like', $coincidencia))
+                ->orWhereHas('ejemplares', fn ($e) => $e
+                    ->where('codigo_barras', 'like', $coincidencia)
+                    ->orWhere('signatura', 'like', $coincidencia));
+        });
     }
 
-    return $query->where(function ($q) use ($texto) {
-        $q->where('titulo', 'like', "%{$texto}%")
-            ->orWhere('isbn', 'like', "%{$texto}%")
-                ->orWhere('palabras_clave', 'like', "%{$texto}%")
-            ->orWhereHas('autores', fn ($a) => $a->where('nombre', 'like', "%{$texto}%"))
-            ->orWhereHas('ejemplares', fn ($e) => $e
-                ->where('codigo_barras', 'like', "%{$texto}%")
-                ->orWhere('signatura', 'like', "%{$texto}%"));
-    });
+    return $query;
+}
+
+public function scopeConTema($query, ?string $tema)
+{
+    return $query->when($tema, fn ($q) => $q->where('palabras_clave', 'like', '%'.$tema.'%'));
 }
 
     public function scopeConStock($query)

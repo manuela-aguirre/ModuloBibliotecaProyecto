@@ -7,19 +7,29 @@
         $porUbicacion = $disponibles->groupBy(fn ($e) => $e->ubicacion?->nombre ?? 'Sin ubicación registrada');
     @endphp
 
-    <div class="cotec-panel ui-wrap" style="max-width:820px;">
+    <article class="cotec-panel ui-wrap" style="max-width:820px;" aria-labelledby="libro-titulo">
         @include('partials.mensajes')
 
+        <h3 id="libro-titulo" class="ui-title">{{ $libro->titulo }}</h3>
         <p class="ui-muted">
+            <span class="font-semibold">Autor(es):</span>
             {{ $libro->autores->pluck('nombre')->join(', ') ?: 'Autor no registrado' }}
             · {{ $libro->editorial->nombre }} · ISBN {{ $libro->isbn ?? '—' }}
         </p>
         <p style="margin:.75rem 0;">{{ $libro->descripcion ?: 'Sin descripción.' }}</p>
         @if ($libro->palabras_clave)
-            <p class="ui-muted">Palabras clave: {{ $libro->palabras_clave }}</p>
+            <p class="ui-muted"><span class="font-semibold">Temas y palabras clave:</span> {{ $libro->palabras_clave }}</p>
         @endif
 
-        <div class="ui-inline" style="margin-bottom:1rem;">
+        @if ($libro->recurso_digital_url)
+            <p>
+                <a class="ui-btn ui-btn-light" href="{{ $libro->recurso_digital_url }}" target="_blank" rel="noopener noreferrer">
+                    Consultar recurso digital <span class="sr-only">(se abre en una pestaña nueva)</span>
+                </a>
+            </p>
+        @endif
+
+        <div class="ui-inline" style="margin-bottom:1rem;" aria-label="Área temática y disponibilidad">
             <span class="ui-badge">{{ $libro->genero->nombre }}</span>
             @if ($disponibles->count() > 0)
                 <span class="ui-badge ok">{{ $disponibles->count() }} de {{ $libro->ejemplares->count() }} disponible(s)</span>
@@ -43,6 +53,12 @@
                     Ya reservaste este libro. Lo esperamos el <strong>{{ $miReserva->fecha_retiro->format('d/m/Y') }}</strong>.
                     <a href="{{ route('reservas.index') }}" class="ui-btn ui-btn-sm" style="align-self:flex-start;">Ver mis reservas</a>
                 </div>
+            @elseif ($miEspera?->estado === 'espera')
+                <div class="ui-card">
+                    <strong>Estás en la lista de espera</strong>
+                    <span>Tu posición actual es {{ $posicionEspera }} de {{ $personasEnEspera }}.</span>
+                    <a href="{{ route('reservas.index') }}" class="ui-btn ui-btn-sm" style="align-self:flex-start;">Ver mis reservas</a>
+                </div>
             @elseif ($disponibles->count() > 0)
                 <form method="POST" action="{{ route('reservas.store', $libro) }}" class="ui-card">
                     @csrf
@@ -63,10 +79,24 @@
                     <span class="ui-muted">Puedes elegir hasta {{ config('biblioteca.dias_max_reserva') }} días desde hoy.</span>
                     <button class="ui-btn" style="align-self:flex-start;">Reservar libro</button>
                 </form>
+            @else
+                <div class="ui-card">
+                    <strong>Este título no tiene ejemplares disponibles.</strong>
+                    @if ($miEspera?->estado === 'reservada')
+                        <span>Ya se te asignó una reserva; revisa la fecha de retiro en tus reservas.</span>
+                        <a href="{{ route('reservas.index') }}" class="ui-btn ui-btn-sm" style="align-self:flex-start;">Ver mis reservas</a>
+                    @else
+                        <span>{{ $personasEnEspera }} persona(s) en lista de espera.</span>
+                        <form method="POST" action="{{ route('lista-espera.store', $libro) }}">
+                            @csrf
+                            <button class="ui-btn" type="submit">Unirme a la lista de espera</button>
+                        </form>
+                    @endif
+                </div>
             @endif
         @else
             <div class="ui-card">
-                Para reservar este libro necesitas una cuenta.
+                Para reservar este libro o unirte a la lista de espera necesitas una cuenta.
                 <div class="ui-inline">
                     <a class="ui-btn ui-btn-sm" href="{{ route('login') }}">Iniciar sesión</a>
                     <a class="ui-btn ui-btn-sm ui-btn-light" href="{{ route('register') }}">Registrarme</a>
@@ -75,5 +105,5 @@
         @endauth
 
         <div style="margin-top:1rem;"><a href="{{ route('catalogo.index') }}" class="ui-btn ui-btn-light ui-btn-sm">← Volver al catálogo</a></div>
-    </div>
+    </article>
 </x-app-layout>
