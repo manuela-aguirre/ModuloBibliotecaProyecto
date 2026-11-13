@@ -33,7 +33,12 @@ composer install
 ./vendor/bin/sail npm run build
 ```
 
-Con eso ya se entra desde el navegador a `http://localhost`. Se puede crear una cuenta en `/register` o entrar con el usuario que crea el seeder: `test@example.com` / `password`.
+Con eso ya se entra desde el navegador a `http://localhost`. Se puede crear una cuenta en `/register` o entrar con el usuario que crea el seeder: `test@example.com` / `password` usuario admin.
+
+estudiante@example.com -> Estudiante
+rosa.reservas@example.com  -> Otro usuario Estudiante
+
+
 
 > Si el puerto 80 está ocupado, cambia `APP_PORT` en el `.env` (por ejemplo `APP_PORT=8080`) y reinicia con `./vendor/bin/sail down` y `./vendor/bin/sail up -d`.
 >
